@@ -120,7 +120,8 @@ def scrapePFR_WRs():
                 full_url = url_head +  + '/gamelog/' + yr
                 df = pd.read_html(full_url)[0]
                 if df.shape[1] >= 24:
-                    stats = df[[]]
+                    stats = df[[('Receiving', 'Tgt'), ('Receiving', 'Rec'), ('Receiving', 'Yds'), ('Receiving', 'TD'), ('Receiving', 'Y/R'), ('Receiving', '1D'), ('Receiving', 'Ctch%'),
+                                ('Total Yds', 'Touch'), ('Total Yds', 'Y/Tch'), ('Total Yds', 'YScm'), ('Total Yds', 'RRTD'), ('Total Yds', 'Fmb')]]
                     stats.insert(0, 'Pos', '')
                     stats.insert(0, 'Year', yr)
                     stats.insert(0, 'Player', )
