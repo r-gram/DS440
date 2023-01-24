@@ -346,10 +346,12 @@ def scrapePFR_CBs():
                 full_url = url_head +  + '/gamelog/' + yr
                 df = pd.read_html(full_url)[0]
                 if df.shape[1] >= 24:
-                    stats = df[[]]
-                    stats.insert(0, 'Pos', '')
+                    stats = df[[('Defense', 'Int'), ('Defense', 'Targets'), ('Defense', 'Completions'), ('Defense', 'Comp %'), ('Defense', 'Rec. Yds'), ('Defence', 'Yds/Comp')
+                                ('Defense', 'TD'), ('Defence', 'Passer Rating'), ('Defense', 'Blitzes'), ('Defense', 'QB Hurries'), ('Defense', 'QB Knockdowns'), ('Defense', 'Batted Passes')
+                                ('Defense', 'Pressures'), ('Defense', 'Missed Tackles'), ('Defense', 'Missed Tackle %')]]
+                    stats.insert(0, 'Pos', 'CB')
                     stats.insert(0, 'Year', yr)
-                    stats.insert(0, 'Player', )
+                    stats.insert(0, 'Player', cb)
                     list_stats = list(stats.iloc[-1])
                     _DataFrame.loc[len(_DataFrame.index)] = list_stats
             except:
