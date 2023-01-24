@@ -351,7 +351,7 @@ def scrapePFR_CBs():
                                 ('Defense', 'Pressures'), ('Defense', 'Missed Tackles'), ('Defense', 'Missed Tackle %')]]
                     stats.insert(0, 'Pos', 'CB')
                     stats.insert(0, 'Year', yr)
-                    stats.insert(0, 'Player', cb)
+                    stats.insert(0, 'Player', CB)
                     list_stats = list(stats.iloc[-1])
                     _DataFrame.loc[len(_DataFrame.index)] = list_stats
             except:
