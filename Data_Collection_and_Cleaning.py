@@ -78,62 +78,503 @@ def scrapePFR_QBs_Reg():
     return QB_DataFrame.to_csv('QB_DataFrame.csv', index=False)
 
 '''
-def scrapePFR_RBs():
-
+def scrapePFR_RBs_Reg():
+    #Create variables to be used
+    url_head = 'https://www.pro-football-reference.com/players/M/'
+    years = ['2017', '2018', '2019', '2020', '2021', '2022']
+    s = getPlayerID('')
+    #Make the DataFrame with  stats
+    _DataFrame = pd.DataFrame(columns=['Player', 'Year', 'Pos', ])
+    #Do the web scraping
+    for yr in years:
+        for  in s:
+            try:
+                full_url = url_head +  + '/gamelog/' + yr
+                df = pd.read_html(full_url)[0]
+                if df.shape[1] >= 24:
+                    stats = df[[]]
+                    stats.insert(0, 'Pos', '')
+                    stats.insert(0, 'Year', yr)
+                    stats.insert(0, 'Player', )
+                    list_stats = list(stats.iloc[-1])
+                    _DataFrame.loc[len(_DataFrame.index)] = list_stats
+            except:
+                pass
+    #Save DF as .csv
+    return _DataFrame.to_csv('_DataFrame.csv', index=False)
 
 def scrapePFR_WRs():
-
+    #Create variables to be used
+    url_head = 'https://www.pro-football-reference.com/players/M/'
+    years = ['2017', '2018', '2019', '2020', '2021', '2022']
+    s = getPlayerID('')
+    #Make the DataFrame with  stats
+    _DataFrame = pd.DataFrame(columns=['Player', 'Year', 'Pos', ])
+    #Do the web scraping
+    for yr in years:
+        for  in s:
+            try:
+                full_url = url_head +  + '/gamelog/' + yr
+                df = pd.read_html(full_url)[0]
+                if df.shape[1] >= 24:
+                    stats = df[[]]
+                    stats.insert(0, 'Pos', '')
+                    stats.insert(0, 'Year', yr)
+                    stats.insert(0, 'Player', )
+                    list_stats = list(stats.iloc[-1])
+                    _DataFrame.loc[len(_DataFrame.index)] = list_stats
+            except:
+                pass
+    #Save DF as .csv
+    return _DataFrame.to_csv('_DataFrame.csv', index=False)
 
 def scrapePFR_TEs():
-
+    #Create variables to be used
+    url_head = 'https://www.pro-football-reference.com/players/M/'
+    years = ['2017', '2018', '2019', '2020', '2021', '2022']
+    s = getPlayerID('')
+    #Make the DataFrame with  stats
+    _DataFrame = pd.DataFrame(columns=['Player', 'Year', 'Pos', ])
+    #Do the web scraping
+    for yr in years:
+        for  in s:
+            try:
+                full_url = url_head +  + '/gamelog/' + yr
+                df = pd.read_html(full_url)[0]
+                if df.shape[1] >= 24:
+                    stats = df[[]]
+                    stats.insert(0, 'Pos', '')
+                    stats.insert(0, 'Year', yr)
+                    stats.insert(0, 'Player', )
+                    list_stats = list(stats.iloc[-1])
+                    _DataFrame.loc[len(_DataFrame.index)] = list_stats
+            except:
+                pass
+    #Save DF as .csv
+    return _DataFrame.to_csv('_DataFrame.csv', index=False)
 
 def scrapePFR_Gs():
-
+    #Create variables to be used
+    url_head = 'https://www.pro-football-reference.com/players/M/'
+    years = ['2017', '2018', '2019', '2020', '2021', '2022']
+    s = getPlayerID('')
+    #Make the DataFrame with  stats
+    _DataFrame = pd.DataFrame(columns=['Player', 'Year', 'Pos', ])
+    #Do the web scraping
+    for yr in years:
+        for  in s:
+            try:
+                full_url = url_head +  + '/gamelog/' + yr
+                df = pd.read_html(full_url)[0]
+                if df.shape[1] >= 24:
+                    stats = df[[]]
+                    stats.insert(0, 'Pos', '')
+                    stats.insert(0, 'Year', yr)
+                    stats.insert(0, 'Player', )
+                    list_stats = list(stats.iloc[-1])
+                    _DataFrame.loc[len(_DataFrame.index)] = list_stats
+            except:
+                pass
+    #Save DF as .csv
+    return _DataFrame.to_csv('_DataFrame.csv', index=False)
 
 def scrapePFR_Cs():
-
+    #Create variables to be used
+    url_head = 'https://www.pro-football-reference.com/players/M/'
+    years = ['2017', '2018', '2019', '2020', '2021', '2022']
+    s = getPlayerID('')
+    #Make the DataFrame with  stats
+    _DataFrame = pd.DataFrame(columns=['Player', 'Year', 'Pos', ])
+    #Do the web scraping
+    for yr in years:
+        for  in s:
+            try:
+                full_url = url_head +  + '/gamelog/' + yr
+                df = pd.read_html(full_url)[0]
+                if df.shape[1] >= 24:
+                    stats = df[[]]
+                    stats.insert(0, 'Pos', '')
+                    stats.insert(0, 'Year', yr)
+                    stats.insert(0, 'Player', )
+                    list_stats = list(stats.iloc[-1])
+                    _DataFrame.loc[len(_DataFrame.index)] = list_stats
+            except:
+                pass
+    #Save DF as .csv
+    return _DataFrame.to_csv('_DataFrame.csv', index=False)
 
 def scrapePFR_OLs():
-
+    #Create variables to be used
+    url_head = 'https://www.pro-football-reference.com/players/M/'
+    years = ['2017', '2018', '2019', '2020', '2021', '2022']
+    s = getPlayerID('')
+    #Make the DataFrame with  stats
+    _DataFrame = pd.DataFrame(columns=['Player', 'Year', 'Pos', ])
+    #Do the web scraping
+    for yr in years:
+        for  in s:
+            try:
+                full_url = url_head +  + '/gamelog/' + yr
+                df = pd.read_html(full_url)[0]
+                if df.shape[1] >= 24:
+                    stats = df[[]]
+                    stats.insert(0, 'Pos', '')
+                    stats.insert(0, 'Year', yr)
+                    stats.insert(0, 'Player', )
+                    list_stats = list(stats.iloc[-1])
+                    _DataFrame.loc[len(_DataFrame.index)] = list_stats
+            except:
+                pass
+    #Save DF as .csv
+    return _DataFrame.to_csv('_DataFrame.csv', index=False)
 
 def scrapePFR_FBs():
-
+    #Create variables to be used
+    url_head = 'https://www.pro-football-reference.com/players/M/'
+    years = ['2017', '2018', '2019', '2020', '2021', '2022']
+    s = getPlayerID('')
+    #Make the DataFrame with  stats
+    _DataFrame = pd.DataFrame(columns=['Player', 'Year', 'Pos', ])
+    #Do the web scraping
+    for yr in years:
+        for  in s:
+            try:
+                full_url = url_head +  + '/gamelog/' + yr
+                df = pd.read_html(full_url)[0]
+                if df.shape[1] >= 24:
+                    stats = df[[]]
+                    stats.insert(0, 'Pos', '')
+                    stats.insert(0, 'Year', yr)
+                    stats.insert(0, 'Player', )
+                    list_stats = list(stats.iloc[-1])
+                    _DataFrame.loc[len(_DataFrame.index)] = list_stats
+            except:
+                pass
+    #Save DF as .csv
+    return _DataFrame.to_csv('_DataFrame.csv', index=False)
 
 def scrapePFR_Ks():
-
+    #Create variables to be used
+    url_head = 'https://www.pro-football-reference.com/players/M/'
+    years = ['2017', '2018', '2019', '2020', '2021', '2022']
+    s = getPlayerID('')
+    #Make the DataFrame with  stats
+    _DataFrame = pd.DataFrame(columns=['Player', 'Year', 'Pos', ])
+    #Do the web scraping
+    for yr in years:
+        for  in s:
+            try:
+                full_url = url_head +  + '/gamelog/' + yr
+                df = pd.read_html(full_url)[0]
+                if df.shape[1] >= 24:
+                    stats = df[[]]
+                    stats.insert(0, 'Pos', '')
+                    stats.insert(0, 'Year', yr)
+                    stats.insert(0, 'Player', )
+                    list_stats = list(stats.iloc[-1])
+                    _DataFrame.loc[len(_DataFrame.index)] = list_stats
+            except:
+                pass
+    #Save DF as .csv
+    return _DataFrame.to_csv('_DataFrame.csv', index=False)
 
 def scrapePFR_DEs():
-
+    #Create variables to be used
+    url_head = 'https://www.pro-football-reference.com/players/M/'
+    years = ['2017', '2018', '2019', '2020', '2021', '2022']
+    s = getPlayerID('')
+    #Make the DataFrame with  stats
+    _DataFrame = pd.DataFrame(columns=['Player', 'Year', 'Pos', ])
+    #Do the web scraping
+    for yr in years:
+        for  in s:
+            try:
+                full_url = url_head +  + '/gamelog/' + yr
+                df = pd.read_html(full_url)[0]
+                if df.shape[1] >= 24:
+                    stats = df[[]]
+                    stats.insert(0, 'Pos', '')
+                    stats.insert(0, 'Year', yr)
+                    stats.insert(0, 'Player', )
+                    list_stats = list(stats.iloc[-1])
+                    _DataFrame.loc[len(_DataFrame.index)] = list_stats
+            except:
+                pass
+    #Save DF as .csv
+    return _DataFrame.to_csv('_DataFrame.csv', index=False)
 
 def scrapePFR_Ss():
-
+    #Create variables to be used
+    url_head = 'https://www.pro-football-reference.com/players/M/'
+    years = ['2017', '2018', '2019', '2020', '2021', '2022']
+    s = getPlayerID('')
+    #Make the DataFrame with  stats
+    _DataFrame = pd.DataFrame(columns=['Player', 'Year', 'Pos', ])
+    #Do the web scraping
+    for yr in years:
+        for  in s:
+            try:
+                full_url = url_head +  + '/gamelog/' + yr
+                df = pd.read_html(full_url)[0]
+                if df.shape[1] >= 24:
+                    stats = df[[]]
+                    stats.insert(0, 'Pos', '')
+                    stats.insert(0, 'Year', yr)
+                    stats.insert(0, 'Player', )
+                    list_stats = list(stats.iloc[-1])
+                    _DataFrame.loc[len(_DataFrame.index)] = list_stats
+            except:
+                pass
+    #Save DF as .csv
+    return _DataFrame.to_csv('_DataFrame.csv', index=False)
 
 def scrapePFR_CBs():
-
+    #Create variables to be used
+    url_head = 'https://www.pro-football-reference.com/players/M/'
+    years = ['2017', '2018', '2019', '2020', '2021', '2022']
+    s = getPlayerID('')
+    #Make the DataFrame with  stats
+    _DataFrame = pd.DataFrame(columns=['Player', 'Year', 'Pos', ])
+    #Do the web scraping
+    for yr in years:
+        for  in s:
+            try:
+                full_url = url_head +  + '/gamelog/' + yr
+                df = pd.read_html(full_url)[0]
+                if df.shape[1] >= 24:
+                    stats = df[[]]
+                    stats.insert(0, 'Pos', '')
+                    stats.insert(0, 'Year', yr)
+                    stats.insert(0, 'Player', )
+                    list_stats = list(stats.iloc[-1])
+                    _DataFrame.loc[len(_DataFrame.index)] = list_stats
+            except:
+                pass
+    #Save DF as .csv
+    return _DataFrame.to_csv('_DataFrame.csv', index=False)
 
 def scrapePFR_LBs():
-
+    #Create variables to be used
+    url_head = 'https://www.pro-football-reference.com/players/M/'
+    years = ['2017', '2018', '2019', '2020', '2021', '2022']
+    s = getPlayerID('')
+    #Make the DataFrame with  stats
+    _DataFrame = pd.DataFrame(columns=['Player', 'Year', 'Pos', ])
+    #Do the web scraping
+    for yr in years:
+        for  in s:
+            try:
+                full_url = url_head +  + '/gamelog/' + yr
+                df = pd.read_html(full_url)[0]
+                if df.shape[1] >= 24:
+                    stats = df[[]]
+                    stats.insert(0, 'Pos', '')
+                    stats.insert(0, 'Year', yr)
+                    stats.insert(0, 'Player', )
+                    list_stats = list(stats.iloc[-1])
+                    _DataFrame.loc[len(_DataFrame.index)] = list_stats
+            except:
+                pass
+    #Save DF as .csv
+    return _DataFrame.to_csv('_DataFrame.csv', index=False)
 
 def scrapePFR_Ts():
-
+    #Create variables to be used
+    url_head = 'https://www.pro-football-reference.com/players/M/'
+    years = ['2017', '2018', '2019', '2020', '2021', '2022']
+    s = getPlayerID('')
+    #Make the DataFrame with  stats
+    _DataFrame = pd.DataFrame(columns=['Player', 'Year', 'Pos', ])
+    #Do the web scraping
+    for yr in years:
+        for  in s:
+            try:
+                full_url = url_head +  + '/gamelog/' + yr
+                df = pd.read_html(full_url)[0]
+                if df.shape[1] >= 24:
+                    stats = df[[]]
+                    stats.insert(0, 'Pos', '')
+                    stats.insert(0, 'Year', yr)
+                    stats.insert(0, 'Player', )
+                    list_stats = list(stats.iloc[-1])
+                    _DataFrame.loc[len(_DataFrame.index)] = list_stats
+            except:
+                pass
+    #Save DF as .csv
+    return _DataFrame.to_csv('_DataFrame.csv', index=False)
 
 def scrapePFR_OLBs():
-
+    #Create variables to be used
+    url_head = 'https://www.pro-football-reference.com/players/M/'
+    years = ['2017', '2018', '2019', '2020', '2021', '2022']
+    s = getPlayerID('')
+    #Make the DataFrame with  stats
+    _DataFrame = pd.DataFrame(columns=['Player', 'Year', 'Pos', ])
+    #Do the web scraping
+    for yr in years:
+        for  in s:
+            try:
+                full_url = url_head +  + '/gamelog/' + yr
+                df = pd.read_html(full_url)[0]
+                if df.shape[1] >= 24:
+                    stats = df[[]]
+                    stats.insert(0, 'Pos', '')
+                    stats.insert(0, 'Year', yr)
+                    stats.insert(0, 'Player', )
+                    list_stats = list(stats.iloc[-1])
+                    _DataFrame.loc[len(_DataFrame.index)] = list_stats
+            except:
+                pass
+    #Save DF as .csv
+    return _DataFrame.to_csv('_DataFrame.csv', index=False)
 
 def scrapePFR_DTs():
-
+    #Create variables to be used
+    url_head = 'https://www.pro-football-reference.com/players/M/'
+    years = ['2017', '2018', '2019', '2020', '2021', '2022']
+    s = getPlayerID('')
+    #Make the DataFrame with  stats
+    _DataFrame = pd.DataFrame(columns=['Player', 'Year', 'Pos', ])
+    #Do the web scraping
+    for yr in years:
+        for  in s:
+            try:
+                full_url = url_head +  + '/gamelog/' + yr
+                df = pd.read_html(full_url)[0]
+                if df.shape[1] >= 24:
+                    stats = df[[]]
+                    stats.insert(0, 'Pos', '')
+                    stats.insert(0, 'Year', yr)
+                    stats.insert(0, 'Player', )
+                    list_stats = list(stats.iloc[-1])
+                    _DataFrame.loc[len(_DataFrame.index)] = list_stats
+            except:
+                pass
+    #Save DF as .csv
+    return _DataFrame.to_csv('_DataFrame.csv', index=False)
 
 def scrapePFR_DBs():
-
+    #Create variables to be used
+    url_head = 'https://www.pro-football-reference.com/players/M/'
+    years = ['2017', '2018', '2019', '2020', '2021', '2022']
+    s = getPlayerID('')
+    #Make the DataFrame with  stats
+    _DataFrame = pd.DataFrame(columns=['Player', 'Year', 'Pos', ])
+    #Do the web scraping
+    for yr in years:
+        for  in s:
+            try:
+                full_url = url_head +  + '/gamelog/' + yr
+                df = pd.read_html(full_url)[0]
+                if df.shape[1] >= 24:
+                    stats = df[[]]
+                    stats.insert(0, 'Pos', '')
+                    stats.insert(0, 'Year', yr)
+                    stats.insert(0, 'Player', )
+                    list_stats = list(stats.iloc[-1])
+                    _DataFrame.loc[len(_DataFrame.index)] = list_stats
+            except:
+                pass
+    #Save DF as .csv
+    return _DataFrame.to_csv('_DataFrame.csv', index=False)
 
 def scrapePFR_ILBs():
-
+    #Create variables to be used
+    url_head = 'https://www.pro-football-reference.com/players/M/'
+    years = ['2017', '2018', '2019', '2020', '2021', '2022']
+    s = getPlayerID('')
+    #Make the DataFrame with  stats
+    _DataFrame = pd.DataFrame(columns=['Player', 'Year', 'Pos', ])
+    #Do the web scraping
+    for yr in years:
+        for  in s:
+            try:
+                full_url = url_head +  + '/gamelog/' + yr
+                df = pd.read_html(full_url)[0]
+                if df.shape[1] >= 24:
+                    stats = df[[]]
+                    stats.insert(0, 'Pos', '')
+                    stats.insert(0, 'Year', yr)
+                    stats.insert(0, 'Player', )
+                    list_stats = list(stats.iloc[-1])
+                    _DataFrame.loc[len(_DataFrame.index)] = list_stats
+            except:
+                pass
+    #Save DF as .csv
+    return _DataFrame.to_csv('_DataFrame.csv', index=False)
 
 def scrapePFR_DLs():
-
+    #Create variables to be used
+    url_head = 'https://www.pro-football-reference.com/players/M/'
+    years = ['2017', '2018', '2019', '2020', '2021', '2022']
+    s = getPlayerID('')
+    #Make the DataFrame with  stats
+    _DataFrame = pd.DataFrame(columns=['Player', 'Year', 'Pos', ])
+    #Do the web scraping
+    for yr in years:
+        for  in s:
+            try:
+                full_url = url_head +  + '/gamelog/' + yr
+                df = pd.read_html(full_url)[0]
+                if df.shape[1] >= 24:
+                    stats = df[[]]
+                    stats.insert(0, 'Pos', '')
+                    stats.insert(0, 'Year', yr)
+                    stats.insert(0, 'Player', )
+                    list_stats = list(stats.iloc[-1])
+                    _DataFrame.loc[len(_DataFrame.index)] = list_stats
+            except:
+                pass
+    #Save DF as .csv
+    return _DataFrame.to_csv('_DataFrame.csv', index=False)
 
 def scrapePFR_LSs():
-
+    #Create variables to be used
+    url_head = 'https://www.pro-football-reference.com/players/M/'
+    years = ['2017', '2018', '2019', '2020', '2021', '2022']
+    s = getPlayerID('')
+    #Make the DataFrame with  stats
+    _DataFrame = pd.DataFrame(columns=['Player', 'Year', 'Pos', ])
+    #Do the web scraping
+    for yr in years:
+        for  in s:
+            try:
+                full_url = url_head +  + '/gamelog/' + yr
+                df = pd.read_html(full_url)[0]
+                if df.shape[1] >= 24:
+                    stats = df[[]]
+                    stats.insert(0, 'Pos', '')
+                    stats.insert(0, 'Year', yr)
+                    stats.insert(0, 'Player', )
+                    list_stats = list(stats.iloc[-1])
+                    _DataFrame.loc[len(_DataFrame.index)] = list_stats
+            except:
+                pass
+    #Save DF as .csv
+    return _DataFrame.to_csv('_DataFrame.csv', index=False)
 
 def scrapePFR_NTs():
+    #Create variables to be used
+    url_head = 'https://www.pro-football-reference.com/players/M/'
+    years = ['2017', '2018', '2019', '2020', '2021', '2022']
+    NTs = getPlayerID('NT')
+    #Make the DataFrame with  stats
+    NT_DataFrame = pd.DataFrame(columns=['Player', 'Year', 'Pos'])
+    #Do the web scraping
+    for yr in years:
+        for nt in NTs:
+            try:
+                full_url = url_head + nt + '/gamelog/' + yr
+                df = pd.read_html(full_url)[0]
+                if df.shape[1] >= 24:
+                    stats = df[[]]
+                    stats.insert(0, 'Pos', 'NT')
+                    stats.insert(0, 'Year', yr)
+                    stats.insert(0, 'Player', nt)
+                    list_stats = list(stats.iloc[-1])
+                    NT_DataFrame.loc[len(NT_DataFrame.index)] = list_stats
+            except:
+                pass
+    #Save DF as .csv
+    return NT_DataFrame.to_csv('NT_DataFrame.csv', index=False)
 '''
