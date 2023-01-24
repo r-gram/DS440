@@ -1,4 +1,5 @@
 import pandas as pd
+import time
 
 #Read in data
 def draft_2017():
@@ -64,18 +65,20 @@ def scrapePFR_QBs_Reg():
                 full_url = url_head + qb + '/gamelog/' + yr
                 df = pd.read_html(full_url)[0]
                 if df.shape[1] >= 24:
-                    stats = df[['Passing', 'Passing.1', 'Passing.2', 'Passing.3', 'Passing.4', 'Passing.5', 'Passing.6', 'Passing.7', 'Passing.8', 'Passing.9', 'Passing.10',
-                                'Rushing', 'Rushing.1', 'Rushing.2', 'Rushing.3',
-                                'Fumbles', 'Fumbles.1', 'Fumbles.2', 'Fumbles.3', 'Fumbles.4', 'Fumbles.5']]
+                    stats = df[[('Passing', 'Cmp'), ('Passing', 'Att'), ('Passing', 'Cmp%'), ('Passing', 'Yds'), ('Passing', 'TD'), ('Passing', 'Int'), ('Passing', 'Rate'), ('Passing', 'Sk'), ('Passing', 'Yds.1'), ('Passing', 'Y/A'), ('Passing', 'AY/A'),
+                                ('Rushing', 'Att'), ('Rushing', 'Yds'), ('Rushing', 'Y/A'), ('Rushing', 'TD'),
+                                ('Fumbles', 'Fmb'), ('Fumbles', 'FL'), ('Fumbles', 'FF'), ('Fumbles', 'FR'), ('Fumbles', 'Yds'), ('Fumbles', 'TD')]]
                     stats.insert(0, 'Pos', 'QB')
                     stats.insert(0, 'Year', yr)
                     stats.insert(0, 'Player', qb)
                     list_stats = list(stats.iloc[-1])
                     QB_DataFrame.loc[len(QB_DataFrame.index)] = list_stats
-            except:
+                    time.sleep(1)
+            except ImportError:
+                time.sleep(1)
                 pass
     #Save DF as .csv
-    return QB_DataFrame.to_csv('QB_DataFrame.csv', index=False)
+    return QB_DataFrame.to_csv('QBs_DataFrame.csv', index=False)
 
 '''
 def scrapePFR_RBs_Reg():
