@@ -98,6 +98,8 @@ def scrapePFR_QBs_Reg():
                         df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Non-Football Injury'], '0%')
                     if 'COVID-19 List' in df[('Off. Snaps', 'Pct')].values:
                         df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['COVID-19 List'], '0%')
+                    if 'Exempt List' in df[('Off. Snaps', 'Pct')].values:
+                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Exempt List'], '0%')
                     snapPct_stats = df[[('Off. Snaps', 'Pct')]]
                     snapPct_stats = pd.DataFrame(snapPct_stats[('Off. Snaps', 'Pct')].str.rstrip("%").astype(float)/100)
                     snapPct = [snapPct_stats[('Off. Snaps', 'Pct')].mean()]
