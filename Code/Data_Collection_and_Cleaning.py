@@ -94,6 +94,10 @@ def scrapePFR_QBs_Reg():
                         df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Inactive'], '0%')
                     if 'Suspended' in df[('Off. Snaps', 'Pct')].values:
                         df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Suspended'], '0%')
+                    if 'Non-Football Injury' in df[('Off. Snaps', 'Pct')].values:
+                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Non-Football Injury'], '0%')
+                    if 'COVID-19 List' in df[('Off. Snaps', 'Pct')].values:
+                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['COVID-19 List'], '0%')
                     snapPct_stats = df[[('Off. Snaps', 'Pct')]]
                     snapPct_stats = pd.DataFrame(snapPct_stats[('Off. Snaps', 'Pct')].str.rstrip("%").astype(float)/100)
                     snapPct = [snapPct_stats[('Off. Snaps', 'Pct')].mean()]
@@ -134,33 +138,71 @@ def scrapePFR_RBs_Reg():
     #Save DF as .csv
     return _DataFrame.to_csv('_DataFrame.csv', index=False)
 '''
-'''
-def scrapePFR_WRs():
+
+def scrapePFR_WRs_Reg():
     #Create variables to be used
     url_head = 'https://www.pro-football-reference.com/players/M/'
     years = ['2017', '2018', '2019', '2020', '2021', '2022']
-    s = getPlayerID('')
-    #Make the DataFrame with  stats
-    _DataFrame = pd.DataFrame(columns=['Player', 'Year', 'Pos', ])
+    WRs = getPlayerID('WR')
+    #Make the DataFrame with WR stats
+    WR_DataFrame = pd.DataFrame(columns=['Player', 'Year', 'Pos', 'Rec_Tgt', 'Rec_Rec', 'Rec_Yds', 'Rec_Y/R', 'Rec_TD', 'Rec_Ctch%', 'Rec_Y/Tgt',
+                                         'Rus_Att', 'Rus_Yds', 'Rus_Y/A', 'Rus_TD',
+                                         'F_Fmb', 'F_Fl', 'F_FF', 'F_FR', 'F_Yds', 'F_TD',
+                                         'Snap%'])
     #Do the web scraping
     for yr in years:
-        for  in s:
+        for wr in WRs:
             try:
-                full_url = url_head +  + '/gamelog/' + yr
+                time.sleep(2)
+                full_url = url_head + wr + '/gamelog/' + yr
                 df = pd.read_html(full_url)[0]
-                if df.shape[1] >= 24:
-                    stats = df[[('Receiving', 'Tgt'), ('Receiving', 'Rec'), ('Receiving', 'Yds'), ('Receiving', 'TD'), ('Receiving', 'Y/R'), ('Receiving', '1D'), ('Receiving', 'Ctch%'),
-                                ('Total Yds', 'Touch'), ('Total Yds', 'Y/Tch'), ('Total Yds', 'YScm'), ('Total Yds', 'RRTD'), ('Total Yds', 'Fmb')]]
-                    stats.insert(0, 'Pos', '')
-                    stats.insert(0, 'Year', yr)
-                    stats.insert(0, 'Player', )
-                    list_stats = list(stats.iloc[-1])
-                    _DataFrame.loc[len(_DataFrame.index)] = list_stats
-            except:
-                pass
+                if 'Receiving' in df.columns:
+                    receiving_stats = df[[('Receiving', 'Tgt'), ('Receiving', 'Rec'), ('Receiving', 'Yds'), ('Receiving', 'Y/R'), ('Receiving', 'TD'), ('Receiving', 'Ctch%'), ('Receiving', 'Y/Tgt')]]
+                    receiving_stats.insert(0, 'Pos', 'WR')
+                    receiving_stats.insert(0, 'Year', yr)
+                    receiving_stats.insert(0, 'Player', wr)
+                    receiving_stats = list(receiving_stats.iloc[-1])
+                else:
+                    receiving_stats = [wr, yr, 'WR', np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
+                if 'Rushing' in df.columns:
+                    rushing_stats = df[[('Rushing', 'Att'), ('Rushing', 'Yds'), ('Rushing', 'Y/A'), ('Rushing', 'TD')]]
+                    rushing_stats = list(rushing_stats.iloc[-1])
+                else:
+                    rushing_stats = [np.nan, np.nan, np.nan, np.nan]
+                if 'Fumbles' in df.columns:
+                    fumble_stats = df[[('Fumbles', 'Fmb'), ('Fumbles', 'FL'), ('Fumbles', 'FF'), ('Fumbles', 'FR'), ('Fumbles', 'Yds'), ('Fumbles', 'TD')]]
+                    fumble_stats = list(fumble_stats.iloc[-1])
+                else:
+                    fumble_stats = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
+                if 'Off. Snaps' in df.columns:
+                    if 'Did Not Play' in df[('Off. Snaps', 'Pct')].values:
+                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Did Not Play'], '0%')
+                    if 'Injured Reserve' in df[('Off. Snaps', 'Pct')].values:
+                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Injured Reserve'], '0%')
+                    if 'Inactive' in df[('Off. Snaps', 'Pct')].values:
+                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Inactive'], '0%')
+                    if 'Suspended' in df[('Off. Snaps', 'Pct')].values:
+                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Suspended'], '0%')
+                    if 'Non-Football Injury' in df[('Off. Snaps', 'Pct')].values:
+                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Non-Football Injury'], '0%')
+                    if 'COVID-19 List' in df[('Off. Snaps', 'Pct')].values:
+                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['COVID-19 List'], '0%')
+                    if 'Exempt List' in df[('Off. Snaps', 'Pct')].values:
+                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Exempt List'], '0%')
+                    snapPct_stats = df[[('Off. Snaps', 'Pct')]]
+                    snapPct_stats = pd.DataFrame(snapPct_stats[('Off. Snaps', 'Pct')].str.rstrip("%").astype(float)/100)
+                    snapPct = [snapPct_stats[('Off. Snaps', 'Pct')].mean()]
+                else:
+                    snapPct = [np.nan]
+                stats = receiving_stats + rushing_stats + fumble_stats + snapPct
+                WR_DataFrame.loc[len(WR_DataFrame.index)] = stats
+            except ImportError:
+                time.sleep(2)
+                stats = [wr, yr, 'WR', np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
+                WR_DataFrame.loc[len(WR_DataFrame.index)] = stats
     #Save DF as .csv
-    return _DataFrame.to_csv('_DataFrame.csv', index=False)
-'''
+    return WR_DataFrame.to_csv('WR_DataFrame.csv', index=False)
+
 '''
 def scrapePFR_TEs():
     #Create variables to be used
