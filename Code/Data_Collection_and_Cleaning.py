@@ -229,15 +229,16 @@ def scrapePFR_TEs_Reg():
     #Create variables to be used
     url_head = 'https://www.pro-football-reference.com/players/M/'
     years = ['2017', '2018', '2019', '2020', '2021', '2022']
-    TEs = getPlayerID('WR')
-    #Make the DataFrame with WR stats
+    TEs = getPlayerID('TE')
+    #Make the DataFrame with TE stats
     TE_DataFrame = pd.DataFrame(columns=['Player', 'Year', 'Pos', 'Rec_Tgt', 'Rec_Rec', 'Rec_Yds', 'Rec_Y/R', 'Rec_TD', 'Rec_Ctch%', 'Rec_Y/Tgt',
-                                         'Rus_Att', 'Rus_Yds', 'Rus_Y/A', 'Rus_TD',
+                                         'Tkl_Tot', 'Tkl_Ast', 'Tkl_Comb', 'Tkl_TFL', 'Tkl_QBHits',
                                          'F_Fmb', 'F_Fl', 'F_FF', 'F_FR', 'F_Yds', 'F_TD',
-                                         'Snap%'])
+                                         'OffSnap%',
+                                         'STSnap%'])
     #Do the web scraping
     for yr in years:
-        for te in WRs:
+        for te in TEs:
             try:
                 time.sleep(2)
                 full_url = url_head + te + '/gamelog/' + yr
@@ -300,7 +301,7 @@ def scrapePFR_TEs_Reg():
                     stPct = [stPct_stats[('ST Snaps', 'Pct')].mean()]
                 else:
                     stPct = [np.nan]
-                stats = receiving_stats + rushing_stats + fumble_stats + snapPct + stPct
+                stats = receiving_stats + tackle_stats + fumble_stats + snapPct + stPct
                 TE_DataFrame.loc[len(TE_DataFrame.index)] = stats
             except ImportError:
                 time.sleep(2)
@@ -391,7 +392,7 @@ def scrapePFR_CBs_Reg():
     url_head = 'https://www.pro-football-reference.com/players/M/'
     years = ['2017', '2018', '2019', '2020', '2021', '2022']
     CBs = getPlayerID('CB')
-    #Make the DataFrame with WR stats
+    #Make the DataFrame with CB stats
     CB_DataFrame = pd.DataFrame(columns=['Player', 'Year', 'Pos', 'Def_Sk', 'Tkl_Tot', 'Tkl_Ast', 'Tkl_Comb', 'Tkl_TFL', 'Tkl_QBHits',
                                          'Def_Int', 'Def_Yds', 'Def_TD', 'Def_PD',
                                          'DefSnap%',
