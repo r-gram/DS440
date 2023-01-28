@@ -574,15 +574,16 @@ def scrapePFR_Ss_Reg():
     #Save DF as .csv
     return S_DataFrame.to_csv('S_DataFrame.csv', index=False)
 
-'''
+
 def scrapePFR_CBs_Reg():
     #Create variables to be used
     url_head = 'https://www.pro-football-reference.com/players/M/'
     years = ['2017', '2018', '2019', '2020', '2021', '2022']
     CBs = getPlayerID('CB')
-    #Make the DataFrame with CB stats
+    #Make the DataFrame with DE stats
     CB_DataFrame = pd.DataFrame(columns=['Player', 'Year', 'Pos', 'Def_Sk', 'Tkl_Tot', 'Tkl_Ast', 'Tkl_Comb', 'Tkl_TFL', 'Tkl_QBHits',
                                          'Def_Int', 'Def_Yds', 'Def_TD', 'Def_PD',
+                                         'F_Fmb', 'F_Fl', 'F_FF', 'F_FR', 'F_Yds', 'F_TD',
                                          'DefSnap%',
                                          'STSnap%'])
     #Do the web scraping
@@ -610,6 +611,11 @@ def scrapePFR_CBs_Reg():
                     interception_stats = list(interception_stats.iloc[-1])
                 else:
                     interception_stats = [np.nan, np.nan, np.nan, np.nan]
+                if 'Fumbles' in df.columns:
+                    fumble_stats = df[[('Fumbles', 'Fmb'), ('Fumbles', 'FL'), ('Fumbles', 'FF'), ('Fumbles', 'FR'), ('Fumbles', 'Yds'), ('Fumbles', 'TD')]]
+                    fumble_stats = list(fumble_stats.iloc[-1])
+                else:
+                    fumble_stats = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
                 if 'Def. Snaps' in df.columns:
                     if 'Did Not Play' in df[('Def. Snaps', 'Pct')].values:
                         df[('Def. Snaps', 'Pct')] = df[('Def. Snaps', 'Pct')].replace(['Did Not Play'], '0%')
@@ -654,16 +660,16 @@ def scrapePFR_CBs_Reg():
                     stPct = [stPct_stats[('ST Snaps', 'Pct')].mean()]
                 else:
                     stPct = [np.nan]
-                stats = sack_stats + tackle_stats + interception_stats + snapPct + stPct
+                stats = sack_stats + tackle_stats + interception_stats + fumble_stats + snapPct + stPct
                 CB_DataFrame.loc[len(CB_DataFrame.index)] = stats
             except ImportError:
                 time.sleep(2)
-                stats = [cb, yr, 'CB', np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
+                stats = [cb, yr, 'CB', np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
                 CB_DataFrame.loc[len(CB_DataFrame.index)] = stats
     #Save DF as .csv
     return CB_DataFrame.to_csv('CB_DataFrame.csv', index=False)
 
-
+'''
 def scrapePFR_LBs():
     #Create variables to be used
     url_head = 'https://www.pro-football-reference.com/players/M/'
