@@ -3,6 +3,7 @@ import numpy as np
 import time
 
 #Read in data
+'''
 def draft_2017():
     draft2017DF = pd.read_csv("../Data/NFL_2017_Draft.csv")
     return draft2017DF
@@ -48,7 +49,112 @@ def getPlayerID(pos):
     players = df.loc[df['Pos'] == pos]
     player_ids = list(players['id'])
     return player_ids
+'''
 
+def getDraftClass():
+    #Creat variables
+    url_head = 'https://www.pro-football-reference.com/years/'
+    years = [str(yr) for yr in range(2000, 2019)]
+    Draft_DataFrame = pd.DataFrame(columns=['Rnd', 'Pick', 'Tm', 'Player', 'Pos', 'Year'])
+
+    for yr in years:
+        try:
+            time.sleep(2)
+            full_url = url_head + yr + '/draft.htm'
+            df = pd.read_html(full_url)[0]
+            df.columns = df.columns.get_level_values(0)
+            df = df[['Unnamed: 0_level_0', 'Unnamed: 1_level_0', 'Unnamed: 2_level_0', 'Unnamed: 3_level_0', 'Unnamed: 4_level_0']]
+            df = df.rename(columns={"Unnamed: 0_level_0": "Rnd", "Unnamed: 1_level_0": "Pick", "Unnamed: 2_level_0": "Tm", "Unnamed: 3_level_0": "Player", "Unnamed: 4_level_0": "Pos"})
+            df = df[df.Rnd != 'Rnd']
+            df['Player'] = df['Player'].map(lambda x: x.rstrip(' HOF'))
+            df['Year'] = yr
+            Draft_DataFrame = pd.concat([Draft_DataFrame, df], ignore_index=True)
+        except ImportError:
+            time.sleep(2)
+    return Draft_DataFrame.to_csv('Draft_DataFrame.csv', index=False)
+
+
+def listDraftedPlayers(pos, year):
+    draftedPlayers = pd.read_csv("../Data/Draft_DataFrame.csv")
+    draftedPlayers = draftedPlayers.loc[(draftedPlayers['Pos'] == pos) & (draftedPlayers['Year'] == year)]
+    players = draftedPlayers['Player'].tolist()
+    return players
+
+
+def scrapeQB_Stats():
+    url_head = 'https://www.pro-football-reference.com/years/'
+    years = [str(yr) for yr in range(2000, 2019)]
+    QB_DataFrame = pd.DataFrame(columns=['Rk', 'Player', 'Tm', 'Age', 'Pos', 'G', 'GS', 'QBrec', 'Cmp', 'Att',
+                                         'Cmp%', 'Yds', 'TD', 'TD%', 'Int', 'Int%', '1D', 'Lng', 'Y/A', 'AY/A',
+                                         'Y/C', 'Y/G', 'Rate', 'Sk', 'Yds.1', 'Sk%', 'NY/A', 'ANY/A', '4QC', 'GWD', 'Year'])
+    for yr in years:
+        players = listDraftedPlayers('QB', int(yr))
+        for year in range(int(yr), int(yr)+4):
+            try:
+                time.sleep(2)
+                full_url = url_head + str(year) + '/passing.htm'
+                df = pd.read_html(full_url)[0]
+                df['Player'] = df['Player'].map(lambda x: x.rstrip('*+'))
+                df = df.loc[df['Player'].isin(players)]
+                df['Year'] = str(year)
+                if 'QBR' in df.columns:
+                    df = df.drop('QBR', axis=1)
+                QB_DataFrame = pd.concat([QB_DataFrame, df])
+            except ImportError:
+                time.sleep(2)
+    QB_DataFrame['QBrec'] = QB_DataFrame['QBrec'].fillna('0-0-0')
+    QB_DataFrame['Win'] = QB_DataFrame['QBrec'].str.split('-').str[0]
+    QB_DataFrame['Loss'] = QB_DataFrame['QBrec'].str.split('-').str[1]
+    QB_DataFrame['Tie'] = QB_DataFrame['QBrec'].str.split('-').str[2]
+    QB_DataFrame = QB_DataFrame.drop('QBrec', axis=1)
+    QB_DataFrame = QB_DataFrame.fillna('0')
+    QB_DataFrame = QB_DataFrame.astype({'Rk': 'int', 'Player': 'object', 'Tm': 'object', 'Age': 'int', 'Pos': 'object', 'G': 'int', 'GS': 'int', 'Win': 'int', 'Loss': 'int', 'Tie': 'int',
+                                        'Cmp': 'int', 'Att': 'int', 'Cmp%': 'float', 'Yds': 'int', 'TD': 'int', 'TD%': 'float', 'Int': 'int', 'Int%': 'float', '1D': 'int', 'Lng': 'int', 'Y/A': 'float', 'AY/A': 'float',
+                                        'Y/C': 'float', 'Y/G': 'float', 'Rate': 'float', 'Sk': 'int', 'Yds.1': 'int', 'Sk%': 'float', 'NY/A': 'float', 'ANY/A': 'float', '4QC': 'int', 'GWD': 'int', 'Year': 'object'})
+    agg_functions = {'Rk': 'mean', 'Tm': 'last', 'Age': 'last', 'Pos': 'last', 'G': 'sum', 'GS': 'sum', 'Win': 'sum', 'Loss': 'sum', 'Tie': 'sum',
+                     'Cmp': 'sum', 'Att': 'sum', 'Cmp%': 'mean', 'Yds': 'sum', 'TD': 'sum', 'TD%': 'mean', 'Int': 'sum', 'Int%': 'mean', '1D': 'sum', 'Lng': 'mean', 'Y/A': 'mean', 'AY/A': 'mean',
+                     'Y/C': 'mean', 'Y/G': 'mean', 'Rate': 'mean', 'Sk': 'sum', 'Yds.1': 'sum', 'Sk%': 'mean', 'NY/A': 'mean', 'ANY/A': 'mean', '4QC': 'sum', 'GWD': 'sum', 'Year': 'last'}
+    QB_DataFrame = QB_DataFrame.groupby(QB_DataFrame['Player']).aggregate(agg_functions)
+    return QB_DataFrame.to_csv('QB_DataFrame.csv', index=True)
+
+'''
+def scrapeRB_Stats():
+    url_head = 'https://www.pro-football-reference.com/years/'
+    years = [str(yr) for yr in range(2000, 2019)]
+    RB_DataFrame = pd.DataFrame(columns=[#'Rk', 'Player', 'Tm', 'Age', 'Pos', 'G', 'GS', 'QBrec', 'Cmp', 'Att',
+                                         #'Cmp%', 'Yds', 'TD', 'TD%', 'Int', 'Int%', '1D', 'Lng', 'Y/A', 'AY/A',
+                                         ])#'Y/C', 'Y/G', 'Rate', 'Sk', 'Yds.1', 'Sk%', 'NY/A', 'ANY/A', '4QC', 'GWD', 'Year'])
+    for yr in years:
+        players = listDraftedPlayers('RB', int(yr))
+        for year in range(int(yr), int(yr)+4):
+            try:
+                time.sleep(2)
+                full_url = url_head + str(year) + '/rushing.htm'
+                df = pd.read_html(full_url)[0]
+                df['Player'] = df['Player'].map(lambda x: x.rstrip('*+'))
+                df = df.loc[df['Player'].isin(players)]
+                df['Year'] = str(year)
+                #if 'QBR' in df.columns:
+                #    df = df.drop('QBR', axis=1)
+                RB_DataFrame = pd.concat([RB_DataFrame, df])
+            except ImportError:
+                time.sleep(2)
+    QB_DataFrame['QBrec'] = QB_DataFrame['QBrec'].fillna('0-0-0')
+    QB_DataFrame['Win'] = QB_DataFrame['QBrec'].str.split('-').str[0]
+    QB_DataFrame['Loss'] = QB_DataFrame['QBrec'].str.split('-').str[1]
+    QB_DataFrame['Tie'] = QB_DataFrame['QBrec'].str.split('-').str[2]
+    QB_DataFrame = QB_DataFrame.drop('QBrec', axis=1)
+    QB_DataFrame = QB_DataFrame.fillna('0')
+    QB_DataFrame = QB_DataFrame.astype({'Rk': 'int', 'Player': 'object', 'Tm': 'object', 'Age': 'int', 'Pos': 'object', 'G': 'int', 'GS': 'int', 'Win': 'int', 'Loss': 'int', 'Tie': 'int',
+                                        'Cmp': 'int', 'Att': 'int', 'Cmp%': 'float', 'Yds': 'int', 'TD': 'int', 'TD%': 'float', 'Int': 'int', 'Int%': 'float', '1D': 'int', 'Lng': 'int', 'Y/A': 'float', 'AY/A': 'float',
+                                        'Y/C': 'float', 'Y/G': 'float', 'Rate': 'float', 'Sk': 'int', 'Yds.1': 'int', 'Sk%': 'float', 'NY/A': 'float', 'ANY/A': 'float', '4QC': 'int', 'GWD': 'int', 'Year': 'object'})
+    agg_functions = {'Rk': 'mean', 'Tm': 'last', 'Age': 'last', 'Pos': 'last', 'G': 'sum', 'GS': 'sum', 'Win': 'sum', 'Loss': 'sum', 'Tie': 'sum',
+                     'Cmp': 'sum', 'Att': 'sum', 'Cmp%': 'mean', 'Yds': 'sum', 'TD': 'sum', 'TD%': 'mean', 'Int': 'sum', 'Int%': 'mean', '1D': 'sum', 'Lng': 'mean', 'Y/A': 'mean', 'AY/A': 'mean',
+                     'Y/C': 'mean', 'Y/G': 'mean', 'Rate': 'mean', 'Sk': 'sum', 'Yds.1': 'sum', 'Sk%': 'mean', 'NY/A': 'mean', 'ANY/A': 'mean', '4QC': 'sum', 'GWD': 'sum', 'Year': 'last'}
+    QB_DataFrame = QB_DataFrame.groupby(QB_DataFrame['Player']).aggregate(agg_functions)
+    return QB_DataFrame.to_csv('QB_DataFrame.csv', index=True)
+'''
+'''
 #Scrape PFR for QB regular season stats
 def scrapePFR_QBs_Reg():
     #Create variables to be used
@@ -748,7 +854,7 @@ def scrapePFR_LBs_Reg():
                         df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['COVID-19 List'], '0%')
                     if 'Exempt List' in df[('ST Snaps', 'Pct')].values:
                         df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Exempt List'], '0%')
-                    if 'Physically Unable to Perform' in df[('ST Snaps', 'Pct')].values:e
+                    if 'Physically Unable to Perform' in df[('ST Snaps', 'Pct')].values:
                         df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Physically Unable to Perform'], '0%')
                     stPct_stats = df[[('ST Snaps', 'Pct')]]
                     stPct_stats = pd.DataFrame(stPct_stats[('ST Snaps', 'Pct')].str.rstrip("%").astype(float)/100)
@@ -763,3 +869,4 @@ def scrapePFR_LBs_Reg():
                 LB_DataFrame.loc[len(LB_DataFrame.index)] = stats
     #Save DF as .csv
     return LB_DataFrame.to_csv('LB_DataFrame.csv', index=False)
+'''
