@@ -3,54 +3,6 @@ import numpy as np
 import time
 
 #Read in data
-'''
-def draft_2017():
-    draft2017DF = pd.read_csv("../Data/NFL_2017_Draft.csv")
-    return draft2017DF
-def salaries_2017():
-    salaries2017DF = pd.read_csv("../Data/NFL_2017_Player_Salaries.csv")
-    return salaries2017DF
-
-#Get only player, team, and their salary
-def clean_sal():
-	temp = salaries_2017()
-	salaries2017 = temp[['Player', 'Tm', 'Cap Hit']]
-	return salaries2017
-
-def rename_draft():
-    temp = draft_2017()
-    #Rename Columns
-    #Rnd=Draft Round, Pick=Overall Pick, Tm=Team, Player, Pos=Position, 
-    #Age, To=Stats up to, AP1=First team all-pro, PB=Pro Bowl, St=Number of years as starter, 
-    #G=games played, Cmp=passes completed, Att=passes attempted, Yds=passing yards, TD=passing tds, 
-    #Int=ints thrown, Att.1=rushing attempts, Yds.1=rushing yrds, TD.1=rushing tds, Rec=receptions,
-    #Yds.2=rec yards, TD.2=rec tds, Solo=solo tackles, Int.1=defensive int, Sk=sacks, -9999=unique id
-    draft2017 = temp.rename(columns={'Rnd': 'Rnd', 'Pick': 'Pick', 'Tm': 'Tm', 'Player': 'Player', 'Pos': 'Pos', 'Age': 'Age', 'To': 'To', 'AP1': 'AP1', 'PB': 'PB', 'St': 'St', 'G': 'G', 'Cmp': 'Cmp', 'Att': 'PassAtt', 'Yds': 'PassYds', 'TD': 'PassTD', 'Int': 'PassInt', 'Att.1': 'RushAtt', 'Yds.1': 'RushYds', 'TD.1': 'RushTD', 'Rec': 'Rec', 'Yds.2': 'RecYds', 'TD.2': 'RecTD', 'Solo': 'DefSolo', 'Int.1': 'DefInt', 'Sk': 'DefSk', '-9999': 'id'})
-    return draft2017
-def rename_salary():
-    temp = clean_sal()
-    salaries2017 = temp.rename(columns={'Cap Hit': 'BaseSal'})
-    return salaries2017
-
-def joinDraftAndSalaries():
-    draft2017 = rename_draft()
-    salaries2017 = rename_salary()
-    #Get 2017 Draft class salaries
-    joinLeft = pd.merge(left=draft2017, right=salaries2017, how='left', left_on=['Player', 'Tm'], right_on=['Player', 'Tm'])
-    return joinLeft
-
-def saveDaS():
-    return joinDraftAndSalaries().to_csv('Draft&Salaries2017.csv', index=False)
-    #Some Salaries were not complete so the missing values were manually added
-
-#Get the id of drafted players
-def getPlayerID(pos):
-    df = rename_draft()
-    players = df.loc[df['Pos'] == pos]
-    player_ids = list(players['id'])
-    return player_ids
-'''
-
 def getDraftClass():
     #Creat variables
     url_head = 'https://www.pro-football-reference.com/years/'
@@ -260,3 +212,153 @@ def scrapeTE_Stats():
                      'Fmb': 'sum', 'Year': 'last'}
     TE_DataFrame = TE_DataFrame.groupby(TE_DataFrame['Player']).aggregate(agg_functions)
     return TE_DataFrame.to_csv('TE_DataFrame.csv', index=True)
+
+
+def scrapeDE_Stats():
+    url_head = 'https://www.pro-football-reference.com/years/'
+    years = [str(yr) for yr in range(2000, 2019)]
+    DE_DataFrame = pd.DataFrame(columns=['Rk', 'Player', 'Tm', 'Age', 'Pos', 
+                                         'G', 'GS',
+                                         'Intcpt', 'IntYds', 'IntTD', 'Lng', 'PD',
+                                         'FF', 'Fmb', 'FR', 'FumYds', 'FumTD',
+                                         'Sk', 'Comb', 'Solo', 'Ast', 'TFL',
+                                         'QBHits', 'Sfty', 'Year'])
+    for yr in years:
+        players = listDraftedPlayers('DE', int(yr))
+        for year in range(int(yr), int(yr)+4):
+            try:
+                time.sleep(2)
+                full_url = url_head + str(year) + '/defense.htm'
+                df = pd.read_html(full_url)[0]
+                leftTemp = df[[('Unnamed: 0_level_0', 'Rk'), ('Unnamed: 1_level_0', 'Player'), ('Unnamed: 2_level_0', 'Tm'), ('Unnamed: 3_level_0', 'Age'), ('Unnamed: 4_level_0', 'Pos'),
+                               ('Games', 'G'),('Games', 'GS'),
+                               ('Def Interceptions', 'Int'), ('Def Interceptions', 'Yds'), ('Def Interceptions', 'TD'), ('Def Interceptions', 'Lng'), ('Def Interceptions', 'PD')]]
+                leftTemp.columns = leftTemp.columns.get_level_values(1)
+                rightTemp = df[[('Fumbles', 'FF'), ('Fumbles', 'Fmb'), ('Fumbles', 'FR'), ('Fumbles', 'Yds'), ('Fumbles', 'TD'), 
+                                ('Unnamed: 17_level_0', 'Sk'), ('Tackles', 'Comb'), ('Tackles', 'Solo'), ('Tackles', 'Ast'), ('Tackles', 'TFL'), ('Tackles', 'QBHits'), ('Unnamed: 23_level_0', 'Sfty')]]
+                rightTemp.columns = rightTemp.columns.get_level_values(1)
+                leftTemp = leftTemp.rename(columns = {'Int': 'Intcpt', 'Yds': 'IntYds', 'TD': 'IntTD'})
+                rightTemp = rightTemp.rename(columns = {'Yds': 'FumYds', 'TD': 'FumTD'})
+                df = leftTemp.join(rightTemp)
+                df['Player'] = df['Player'].map(lambda x: x.rstrip('*+'))
+                df = df[df.Rk != 'Rk']
+                df = df.loc[df['Player'].isin(players)]
+                df['Year'] = str(year)
+                DE_DataFrame = pd.concat([DE_DataFrame, df])
+            except ImportError:
+                time.sleep(2)
+    DE_DataFrame = DE_DataFrame.fillna('0')
+    DE_DataFrame = DE_DataFrame.astype({'Rk': 'int', 'Player': 'object', 'Tm': 'object', 'Age': 'int', 'Pos': 'object',
+                                        'G': 'int', 'GS': 'int',
+                                        'Intcpt': 'int', 'IntYds': 'int', 'IntTD': 'int', 'Lng': 'int', 'PD': 'int',
+                                        'FF': 'int', 'Fmb': 'int', 'FR': 'int', 'FumYds': 'int', 'FumTD': 'int',
+                                        'Sk': 'float', 'Comb': 'int', 'Solo': 'int', 'Ast': 'int', 'TFL': 'int',
+                                        'QBHits': 'int', 'Sfty': 'int', 'Year': 'object'})
+    agg_functions = {'Rk': 'mean', 'Tm': 'last', 'Age': 'last', 'Pos': 'last',
+                     'G': 'sum', 'GS': 'sum',
+                     'Intcpt': 'sum', 'IntYds': 'sum', 'IntTD': 'sum', 'Lng': 'mean', 'PD': 'sum',
+                     'FF': 'sum', 'Fmb': 'sum', 'FR': 'sum', 'FumYds': 'sum', 'FumTD': 'sum',
+                     'Sk': 'sum', 'Comb': 'sum', 'Solo': 'sum', 'Ast': 'sum', 'TFL': 'sum',
+                     'QBHits': 'sum', 'Sfty': 'sum', 'Year': 'last'}
+    DE_DataFrame = DE_DataFrame.groupby(DE_DataFrame['Player']).aggregate(agg_functions)
+    return DE_DataFrame.to_csv('DE_DataFrame.csv', index=True)
+
+
+def scrapeDB_Stats():
+    url_head = 'https://www.pro-football-reference.com/years/'
+    years = [str(yr) for yr in range(2000, 2019)]
+    DB_DataFrame = pd.DataFrame(columns=['Rk', 'Player', 'Tm', 'Age', 'Pos', 
+                                         'G', 'GS',
+                                         'Intcpt', 'IntYds', 'IntTD', 'Lng', 'PD',
+                                         'FF', 'Fmb', 'FR', 'FumYds', 'FumTD',
+                                         'Sk', 'Comb', 'Solo', 'Ast', 'TFL',
+                                         'QBHits', 'Sfty', 'Year'])
+    for yr in years:
+        players = listDraftedPlayers('DB', int(yr))
+        for year in range(int(yr), int(yr)+4):
+            try:
+                time.sleep(2)
+                full_url = url_head + str(year) + '/defense.htm'
+                df = pd.read_html(full_url)[0]
+                leftTemp = df[[('Unnamed: 0_level_0', 'Rk'), ('Unnamed: 1_level_0', 'Player'), ('Unnamed: 2_level_0', 'Tm'), ('Unnamed: 3_level_0', 'Age'), ('Unnamed: 4_level_0', 'Pos'),
+                               ('Games', 'G'),('Games', 'GS'),
+                               ('Def Interceptions', 'Int'), ('Def Interceptions', 'Yds'), ('Def Interceptions', 'TD'), ('Def Interceptions', 'Lng'), ('Def Interceptions', 'PD')]]
+                leftTemp.columns = leftTemp.columns.get_level_values(1)
+                rightTemp = df[[('Fumbles', 'FF'), ('Fumbles', 'Fmb'), ('Fumbles', 'FR'), ('Fumbles', 'Yds'), ('Fumbles', 'TD'), 
+                                ('Unnamed: 17_level_0', 'Sk'), ('Tackles', 'Comb'), ('Tackles', 'Solo'), ('Tackles', 'Ast'), ('Tackles', 'TFL'), ('Tackles', 'QBHits'), ('Unnamed: 23_level_0', 'Sfty')]]
+                rightTemp.columns = rightTemp.columns.get_level_values(1)
+                leftTemp = leftTemp.rename(columns = {'Int': 'Intcpt', 'Yds': 'IntYds', 'TD': 'IntTD'})
+                rightTemp = rightTemp.rename(columns = {'Yds': 'FumYds', 'TD': 'FumTD'})
+                df = leftTemp.join(rightTemp)
+                df['Player'] = df['Player'].map(lambda x: x.rstrip('*+'))
+                df = df[df.Rk != 'Rk']
+                df = df.loc[df['Player'].isin(players)]
+                df['Year'] = str(year)
+                DB_DataFrame = pd.concat([DB_DataFrame, df])
+            except ImportError:
+                time.sleep(2)
+    DB_DataFrame = DB_DataFrame.fillna('0')
+    DB_DataFrame = DB_DataFrame.astype({'Rk': 'int', 'Player': 'object', 'Tm': 'object', 'Age': 'int', 'Pos': 'object',
+                                        'G': 'int', 'GS': 'int',
+                                        'Intcpt': 'int', 'IntYds': 'int', 'IntTD': 'int', 'Lng': 'int', 'PD': 'int',
+                                        'FF': 'int', 'Fmb': 'int', 'FR': 'int', 'FumYds': 'int', 'FumTD': 'int',
+                                        'Sk': 'float', 'Comb': 'int', 'Solo': 'int', 'Ast': 'int', 'TFL': 'int',
+                                        'QBHits': 'int', 'Sfty': 'int', 'Year': 'object'})
+    agg_functions = {'Rk': 'mean', 'Tm': 'last', 'Age': 'last', 'Pos': 'last',
+                     'G': 'sum', 'GS': 'sum',
+                     'Intcpt': 'sum', 'IntYds': 'sum', 'IntTD': 'sum', 'Lng': 'mean', 'PD': 'sum',
+                     'FF': 'sum', 'Fmb': 'sum', 'FR': 'sum', 'FumYds': 'sum', 'FumTD': 'sum',
+                     'Sk': 'sum', 'Comb': 'sum', 'Solo': 'sum', 'Ast': 'sum', 'TFL': 'sum',
+                     'QBHits': 'sum', 'Sfty': 'sum', 'Year': 'last'}
+    DB_DataFrame = DB_DataFrame.groupby(DB_DataFrame['Player']).aggregate(agg_functions)
+    return DB_DataFrame.to_csv('DB_DataFrame.csv', index=True)
+
+
+def scrapeLB_Stats():
+    url_head = 'https://www.pro-football-reference.com/years/'
+    years = [str(yr) for yr in range(2000, 2019)]
+    LB_DataFrame = pd.DataFrame(columns=['Rk', 'Player', 'Tm', 'Age', 'Pos', 
+                                         'G', 'GS',
+                                         'Intcpt', 'IntYds', 'IntTD', 'Lng', 'PD',
+                                         'FF', 'Fmb', 'FR', 'FumYds', 'FumTD',
+                                         'Sk', 'Comb', 'Solo', 'Ast', 'TFL',
+                                         'QBHits', 'Sfty', 'Year'])
+    for yr in years:
+        players = listDraftedPlayers('DB', int(yr))
+        for year in range(int(yr), int(yr)+4):
+            try:
+                time.sleep(2)
+                full_url = url_head + str(year) + '/defense.htm'
+                df = pd.read_html(full_url)[0]
+                leftTemp = df[[('Unnamed: 0_level_0', 'Rk'), ('Unnamed: 1_level_0', 'Player'), ('Unnamed: 2_level_0', 'Tm'), ('Unnamed: 3_level_0', 'Age'), ('Unnamed: 4_level_0', 'Pos'),
+                               ('Games', 'G'),('Games', 'GS'),
+                               ('Def Interceptions', 'Int'), ('Def Interceptions', 'Yds'), ('Def Interceptions', 'TD'), ('Def Interceptions', 'Lng'), ('Def Interceptions', 'PD')]]
+                leftTemp.columns = leftTemp.columns.get_level_values(1)
+                rightTemp = df[[('Fumbles', 'FF'), ('Fumbles', 'Fmb'), ('Fumbles', 'FR'), ('Fumbles', 'Yds'), ('Fumbles', 'TD'), 
+                                ('Unnamed: 17_level_0', 'Sk'), ('Tackles', 'Comb'), ('Tackles', 'Solo'), ('Tackles', 'Ast'), ('Tackles', 'TFL'), ('Tackles', 'QBHits'), ('Unnamed: 23_level_0', 'Sfty')]]
+                rightTemp.columns = rightTemp.columns.get_level_values(1)
+                leftTemp = leftTemp.rename(columns = {'Int': 'Intcpt', 'Yds': 'IntYds', 'TD': 'IntTD'})
+                rightTemp = rightTemp.rename(columns = {'Yds': 'FumYds', 'TD': 'FumTD'})
+                df = leftTemp.join(rightTemp)
+                df['Player'] = df['Player'].map(lambda x: x.rstrip('*+'))
+                df = df[df.Rk != 'Rk']
+                df = df.loc[df['Player'].isin(players)]
+                df['Year'] = str(year)
+                LB_DataFrame = pd.concat([LB_DataFrame, df])
+            except ImportError:
+                time.sleep(2)
+    LB_DataFrame = LB_DataFrame.fillna('0')
+    LB_DataFrame = LB_DataFrame.astype({'Rk': 'int', 'Player': 'object', 'Tm': 'object', 'Age': 'int', 'Pos': 'object',
+                                        'G': 'int', 'GS': 'int',
+                                        'Intcpt': 'int', 'IntYds': 'int', 'IntTD': 'int', 'Lng': 'int', 'PD': 'int',
+                                        'FF': 'int', 'Fmb': 'int', 'FR': 'int', 'FumYds': 'int', 'FumTD': 'int',
+                                        'Sk': 'float', 'Comb': 'int', 'Solo': 'int', 'Ast': 'int', 'TFL': 'int',
+                                        'QBHits': 'int', 'Sfty': 'int', 'Year': 'object'})
+    agg_functions = {'Rk': 'mean', 'Tm': 'last', 'Age': 'last', 'Pos': 'last',
+                     'G': 'sum', 'GS': 'sum',
+                     'Intcpt': 'sum', 'IntYds': 'sum', 'IntTD': 'sum', 'Lng': 'mean', 'PD': 'sum',
+                     'FF': 'sum', 'Fmb': 'sum', 'FR': 'sum', 'FumYds': 'sum', 'FumTD': 'sum',
+                     'Sk': 'sum', 'Comb': 'sum', 'Solo': 'sum', 'Ast': 'sum', 'TFL': 'sum',
+                     'QBHits': 'sum', 'Sfty': 'sum', 'Year': 'last'}
+    LB_DataFrame = LB_DataFrame.groupby(LB_DataFrame['Player']).aggregate(agg_functions)
+    return LB_DataFrame.to_csv('LB_DataFrame.csv', index=True)
