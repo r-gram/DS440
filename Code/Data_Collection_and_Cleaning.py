@@ -117,13 +117,14 @@ def scrapeQB_Stats():
     QB_DataFrame = QB_DataFrame.groupby(QB_DataFrame['Player']).aggregate(agg_functions)
     return QB_DataFrame.to_csv('QB_DataFrame.csv', index=True)
 
-'''
+
 def scrapeRB_Stats():
     url_head = 'https://www.pro-football-reference.com/years/'
     years = [str(yr) for yr in range(2000, 2019)]
-    RB_DataFrame = pd.DataFrame(columns=[#'Rk', 'Player', 'Tm', 'Age', 'Pos', 'G', 'GS', 'QBrec', 'Cmp', 'Att',
-                                         #'Cmp%', 'Yds', 'TD', 'TD%', 'Int', 'Int%', '1D', 'Lng', 'Y/A', 'AY/A',
-                                         ])#'Y/C', 'Y/G', 'Rate', 'Sk', 'Yds.1', 'Sk%', 'NY/A', 'ANY/A', '4QC', 'GWD', 'Year'])
+    RB_DataFrame = pd.DataFrame(columns=['Rk', 'Player', 'Tm', 'Age', 'Pos', 
+                                         'G', 'GS', 
+                                         'Att', 'Yds', 'TD', '1D', 'Lng', 'Y/A', 'Y/G',
+                                         'Fmb', 'Year'])
     for yr in years:
         players = listDraftedPlayers('RB', int(yr))
         for year in range(int(yr), int(yr)+4):
@@ -131,29 +132,25 @@ def scrapeRB_Stats():
                 time.sleep(2)
                 full_url = url_head + str(year) + '/rushing.htm'
                 df = pd.read_html(full_url)[0]
+                df.columns = df.columns.get_level_values(1)
                 df['Player'] = df['Player'].map(lambda x: x.rstrip('*+'))
                 df = df.loc[df['Player'].isin(players)]
                 df['Year'] = str(year)
-                #if 'QBR' in df.columns:
-                #    df = df.drop('QBR', axis=1)
                 RB_DataFrame = pd.concat([RB_DataFrame, df])
             except ImportError:
                 time.sleep(2)
-    QB_DataFrame['QBrec'] = QB_DataFrame['QBrec'].fillna('0-0-0')
-    QB_DataFrame['Win'] = QB_DataFrame['QBrec'].str.split('-').str[0]
-    QB_DataFrame['Loss'] = QB_DataFrame['QBrec'].str.split('-').str[1]
-    QB_DataFrame['Tie'] = QB_DataFrame['QBrec'].str.split('-').str[2]
-    QB_DataFrame = QB_DataFrame.drop('QBrec', axis=1)
-    QB_DataFrame = QB_DataFrame.fillna('0')
-    QB_DataFrame = QB_DataFrame.astype({'Rk': 'int', 'Player': 'object', 'Tm': 'object', 'Age': 'int', 'Pos': 'object', 'G': 'int', 'GS': 'int', 'Win': 'int', 'Loss': 'int', 'Tie': 'int',
-                                        'Cmp': 'int', 'Att': 'int', 'Cmp%': 'float', 'Yds': 'int', 'TD': 'int', 'TD%': 'float', 'Int': 'int', 'Int%': 'float', '1D': 'int', 'Lng': 'int', 'Y/A': 'float', 'AY/A': 'float',
-                                        'Y/C': 'float', 'Y/G': 'float', 'Rate': 'float', 'Sk': 'int', 'Yds.1': 'int', 'Sk%': 'float', 'NY/A': 'float', 'ANY/A': 'float', '4QC': 'int', 'GWD': 'int', 'Year': 'object'})
-    agg_functions = {'Rk': 'mean', 'Tm': 'last', 'Age': 'last', 'Pos': 'last', 'G': 'sum', 'GS': 'sum', 'Win': 'sum', 'Loss': 'sum', 'Tie': 'sum',
-                     'Cmp': 'sum', 'Att': 'sum', 'Cmp%': 'mean', 'Yds': 'sum', 'TD': 'sum', 'TD%': 'mean', 'Int': 'sum', 'Int%': 'mean', '1D': 'sum', 'Lng': 'mean', 'Y/A': 'mean', 'AY/A': 'mean',
-                     'Y/C': 'mean', 'Y/G': 'mean', 'Rate': 'mean', 'Sk': 'sum', 'Yds.1': 'sum', 'Sk%': 'mean', 'NY/A': 'mean', 'ANY/A': 'mean', '4QC': 'sum', 'GWD': 'sum', 'Year': 'last'}
-    QB_DataFrame = QB_DataFrame.groupby(QB_DataFrame['Player']).aggregate(agg_functions)
-    return QB_DataFrame.to_csv('QB_DataFrame.csv', index=True)
-'''
+    RB_DataFrame = RB_DataFrame.fillna('0')
+    RB_DataFrame = RB_DataFrame.astype({'Rk': 'int', 'Player': 'object', 'Tm': 'object', 'Age': 'int', 'Pos': 'object',
+                                        'G': 'int', 'GS': 'int',
+                                        'Att': 'int', 'Yds': 'int', 'TD': 'int', '1D': 'int', 'Lng': 'int', 'Y/A': 'float', 'Y/G': 'float',
+                                        'Fmb': 'int', 'Year': 'object'})
+    agg_functions = {'Rk': 'mean', 'Tm': 'last', 'Age': 'last', 'Pos': 'last', 
+                     'G': 'sum', 'GS': 'sum',
+                     'Att': 'sum', 'Yds': 'sum', 'TD': 'sum', '1D': 'sum', 'Lng': 'mean', 'Y/A': 'mean', 'Y/G': 'mean', 
+                     'Fmb': 'sum', 'Year': 'last'}
+    RB_DataFrame = RB_DataFrame.groupby(RB_DataFrame['Player']).aggregate(agg_functions)
+    return RB_DataFrame.to_csv('RB_DataFrame.csv', index=True)
+
 '''
 #Scrape PFR for QB regular season stats
 def scrapePFR_QBs_Reg():
