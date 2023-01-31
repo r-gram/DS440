@@ -151,719 +151,112 @@ def scrapeRB_Stats():
     RB_DataFrame = RB_DataFrame.groupby(RB_DataFrame['Player']).aggregate(agg_functions)
     return RB_DataFrame.to_csv('RB_DataFrame.csv', index=True)
 
-'''
-#Scrape PFR for QB regular season stats
-def scrapePFR_QBs_Reg():
-    #Create variables to be used
-    url_head = 'https://www.pro-football-reference.com/players/M/'
-    years = ['2017', '2018', '2019', '2020', '2021', '2022']
-    QBs = getPlayerID('QB')
-    #Make the DataFrame with QB stats
-    QB_DataFrame = pd.DataFrame(columns=['Player', 'Year', 'Pos', 'P_Cmp', 'P_Att', 'P_Cmp%', 'P_Yds', 'P_TD', 'P_Int', 'P_Rate', 'P_Sk', 'P_SkYd', 'P_Y/A', 'P_AY/A',
-                                         'R_Att', 'R_Yds', 'R_Y/A', 'R_TD',
-                                         'F_Fmb', 'F_Fl', 'F_FF', 'F_FR', 'F_Yds', 'F_TD',
-                                         'Snap%'])
-    #Do the web scraping
+
+def scrapeRB_Stats():
+    url_head = 'https://www.pro-football-reference.com/years/'
+    years = [str(yr) for yr in range(2000, 2019)]
+    RB_DataFrame = pd.DataFrame(columns=['Rk', 'Player', 'Tm', 'Age', 'Pos', 
+                                         'G', 'GS', 
+                                         'Att', 'Yds', 'TD', '1D', 'Lng', 'Y/A', 'Y/G',
+                                         'Fmb', 'Year'])
     for yr in years:
-        for qb in QBs:
+        players = listDraftedPlayers('RB', int(yr))
+        for year in range(int(yr), int(yr)+4):
             try:
                 time.sleep(2)
-                full_url = url_head + qb + '/gamelog/' + yr
+                full_url = url_head + str(year) + '/rushing.htm'
                 df = pd.read_html(full_url)[0]
-                if 'Passing' in df.columns:
-                    passing_stats = df[[('Passing', 'Cmp'), ('Passing', 'Att'), ('Passing', 'Cmp%'), ('Passing', 'Yds'), ('Passing', 'TD'), ('Passing', 'Int'), ('Passing', 'Rate'), ('Passing', 'Sk'), ('Passing', 'Yds.1'), ('Passing', 'Y/A'), ('Passing', 'AY/A')]]
-                    passing_stats.insert(0, 'Pos', 'QB')
-                    passing_stats.insert(0, 'Year', yr)
-                    passing_stats.insert(0, 'Player', qb)
-                    passing_stats = list(passing_stats.iloc[-1])
-                else:
-                    passing_stats = [qb, yr, 'QB', np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
-                if 'Rushing' in df.columns:
-                    rushing_stats = df[[('Rushing', 'Att'), ('Rushing', 'Yds'), ('Rushing', 'Y/A'), ('Rushing', 'TD')]]
-                    rushing_stats = list(rushing_stats.iloc[-1])
-                else:
-                    rushing_stats = [np.nan, np.nan, np.nan, np.nan]
-                if 'Fumbles' in df.columns:
-                    fumble_stats = df[[('Fumbles', 'Fmb'), ('Fumbles', 'FL'), ('Fumbles', 'FF'), ('Fumbles', 'FR'), ('Fumbles', 'Yds'), ('Fumbles', 'TD')]]
-                    fumble_stats = list(fumble_stats.iloc[-1])
-                else:
-                    fumble_stats = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
-                if 'Off. Snaps' in df.columns:
-                    if 'Did Not Play' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Did Not Play'], '0%')
-                    if 'Injured Reserve' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Injured Reserve'], '0%')
-                    if 'Inactive' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Inactive'], '0%')
-                    if 'Suspended' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Suspended'], '0%')
-                    if 'Non-Football Injury' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Non-Football Injury'], '0%')
-                    if 'COVID-19 List' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['COVID-19 List'], '0%')
-                    if 'Exempt List' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Exempt List'], '0%')
-                    if 'Physically Unable to Perform' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Physically Unable to Perform'], '0%')
-                    snapPct_stats = df[[('Off. Snaps', 'Pct')]]
-                    snapPct_stats = pd.DataFrame(snapPct_stats[('Off. Snaps', 'Pct')].str.rstrip("%").astype(float)/100)
-                    snapPct = [snapPct_stats[('Off. Snaps', 'Pct')].mean()]
-                else:
-                    snapPct = [np.nan]
-                stats = passing_stats + rushing_stats + fumble_stats + snapPct
-                QB_DataFrame.loc[len(QB_DataFrame.index)] = stats
+                df.columns = df.columns.get_level_values(1)
+                df['Player'] = df['Player'].map(lambda x: x.rstrip('*+'))
+                df = df.loc[df['Player'].isin(players)]
+                df['Year'] = str(year)
+                RB_DataFrame = pd.concat([RB_DataFrame, df])
             except ImportError:
                 time.sleep(2)
-                stats = [qb, yr, 'QB', np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
-                QB_DataFrame.loc[len(QB_DataFrame.index)] = stats
-    #Save DF as .csv
-    return QB_DataFrame.to_csv('QB_DataFrame.csv', index=False)
+    RB_DataFrame = RB_DataFrame.fillna('0')
+    RB_DataFrame = RB_DataFrame.astype({'Rk': 'int', 'Player': 'object', 'Tm': 'object', 'Age': 'int', 'Pos': 'object',
+                                        'G': 'int', 'GS': 'int',
+                                        'Att': 'int', 'Yds': 'int', 'TD': 'int', '1D': 'int', 'Lng': 'int', 'Y/A': 'float', 'Y/G': 'float',
+                                        'Fmb': 'int', 'Year': 'object'})
+    agg_functions = {'Rk': 'mean', 'Tm': 'last', 'Age': 'last', 'Pos': 'last', 
+                     'G': 'sum', 'GS': 'sum',
+                     'Att': 'sum', 'Yds': 'sum', 'TD': 'sum', '1D': 'sum', 'Lng': 'mean', 'Y/A': 'mean', 'Y/G': 'mean', 
+                     'Fmb': 'sum', 'Year': 'last'}
+    RB_DataFrame = RB_DataFrame.groupby(RB_DataFrame['Player']).aggregate(agg_functions)
+    return RB_DataFrame.to_csv('RB_DataFrame.csv', index=True)
 
 
-def scrapePFR_RBs_Reg():
-    #Create variables to be used
-    url_head = 'https://www.pro-football-reference.com/players/M/'
-    years = ['2017', '2018', '2019', '2020', '2021', '2022']
-    RBs = getPlayerID('RB')
-    #Make the DataFrame with WR stats
-    RB_DataFrame = pd.DataFrame(columns=['Player', 'Year', 'Pos', 'Rus_Att', 'Rus_Yds', 'Rus_Y/A', 'Rus_TD',
-                                         'Rec_Tgt', 'Rec_Rec', 'Rec_Yds', 'Rec_Y/R', 'Rec_TD', 'Rec_Ctch%', 'Rec_Y/Tgt',
-                                         'F_Fmb', 'F_Fl', 'F_FF', 'F_FR', 'F_Yds', 'F_TD',
-                                         'OffSnap%',
-                                         'STSnap%'])
-    #Do the web scraping
+def scrapeWR_Stats():
+    url_head = 'https://www.pro-football-reference.com/years/'
+    years = [str(yr) for yr in range(2000, 2019)]
+    WR_DataFrame = pd.DataFrame(columns=['Rk', 'Player', 'Tm', 'Age', 'Pos', 
+                                         'G', 'GS', 
+                                         'Tgt', 'Rec', 'Ctch%', 'Yds', 'Y/R',
+                                         'TD', '1D', 'Lng', 'Y/Tgt', 'R/G', 'Y/G',
+                                         'Fmb', 'Year'])
     for yr in years:
-        for rb in RBs:
+        players = listDraftedPlayers('WR', int(yr))
+        for year in range(int(yr), int(yr)+4):
             try:
                 time.sleep(2)
-                full_url = url_head + rb + '/gamelog/' + yr
+                full_url = url_head + str(year) + '/receiving.htm'
                 df = pd.read_html(full_url)[0]
-                if 'Rushing' in df.columns:
-                    rushing_stats = df[[('Rushing', 'Att'), ('Rushing', 'Yds'), ('Rushing', 'Y/A'), ('Rushing', 'TD')]]
-                    rushing_stats.insert(0, 'Pos', 'RB')
-                    rushing_stats.insert(0, 'Year', yr)
-                    rushing_stats.insert(0, 'Player', rb)
-                    rushing_stats = list(rushing_stats.iloc[-1])
-                else:
-                    rushing_stats = [rb, yr, 'RB', np.nan, np.nan, np.nan, np.nan]
-                if 'Receiving' in df.columns:
-                    receiving_stats = df[[('Receiving', 'Tgt'), ('Receiving', 'Rec'), ('Receiving', 'Yds'), ('Receiving', 'Y/R'), ('Receiving', 'TD'), ('Receiving', 'Ctch%'), ('Receiving', 'Y/Tgt')]]
-                    receiving_stats = list(receiving_stats.iloc[-1])
-                else:
-                    receiving_stats = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
-                if 'Fumbles' in df.columns:
-                    fumble_stats = df[[('Fumbles', 'Fmb'), ('Fumbles', 'FL'), ('Fumbles', 'FF'), ('Fumbles', 'FR'), ('Fumbles', 'Yds'), ('Fumbles', 'TD')]]
-                    fumble_stats = list(fumble_stats.iloc[-1])
-                else:
-                    fumble_stats = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
-                if 'Off. Snaps' in df.columns:
-                    if 'Did Not Play' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Did Not Play'], '0%')
-                    if 'Injured Reserve' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Injured Reserve'], '0%')
-                    if 'Inactive' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Inactive'], '0%')
-                    if 'Suspended' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Suspended'], '0%')
-                    if 'Non-Football Injury' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Non-Football Injury'], '0%')
-                    if 'COVID-19 List' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['COVID-19 List'], '0%')
-                    if 'Exempt List' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Exempt List'], '0%')
-                    if 'Physically Unable to Perform' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Physically Unable to Perform'], '0%')
-                    snapPct_stats = df[[('Off. Snaps', 'Pct')]]
-                    snapPct_stats = pd.DataFrame(snapPct_stats[('Off. Snaps', 'Pct')].str.rstrip("%").astype(float)/100)
-                    snapPct = [snapPct_stats[('Off. Snaps', 'Pct')].mean()]
-                else:
-                    snapPct = [np.nan]
-                if 'ST Snaps' in df.columns:
-                    if 'Did Not Play' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Did Not Play'], '0%')
-                    if 'Injured Reserve' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Injured Reserve'], '0%')
-                    if 'Inactive' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Inactive'], '0%')
-                    if 'Suspended' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Suspended'], '0%')
-                    if 'Non-Football Injury' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Non-Football Injury'], '0%')
-                    if 'COVID-19 List' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['COVID-19 List'], '0%')
-                    if 'Exempt List' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Exempt List'], '0%')
-                    if 'Physically Unable to Perform' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Physically Unable to Perform'], '0%')
-                    stPct_stats = df[[('ST Snaps', 'Pct')]]
-                    stPct_stats = pd.DataFrame(stPct_stats[('ST Snaps', 'Pct')].str.rstrip("%").astype(float)/100)
-                    stPct = [stPct_stats[('ST Snaps', 'Pct')].mean()]
-                else:
-                    stPct = [np.nan]
-                stats = rushing_stats + receiving_stats + fumble_stats + snapPct + stPct
-                RB_DataFrame.loc[len(RB_DataFrame.index)] = stats
+                df['Player'] = df['Player'].map(lambda x: x.rstrip('*+'))
+                df = df[df.Rk != 'Rk']
+                df['Ctch%'] = df['Ctch%'].map(lambda x: x.rstrip("%"))
+                df = df.loc[df['Player'].isin(players)]
+                df['Year'] = str(year)
+                WR_DataFrame = pd.concat([WR_DataFrame, df])
             except ImportError:
                 time.sleep(2)
-                stats = [rb, yr, 'RB', np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
-                RB_DataFrame.loc[len(RB_DataFrame.index)] = stats
-    #Save DF as .csv
-    return RB_DataFrame.to_csv('RB_DataFrame.csv', index=False)
+    WR_DataFrame = WR_DataFrame.fillna('0')
+    WR_DataFrame = WR_DataFrame.astype({'Rk': 'int', 'Player': 'object', 'Tm': 'object', 'Age': 'int', 'Pos': 'object',
+                                        'G': 'int', 'GS': 'int',
+                                        'Tgt': 'int', 'Rec': 'int', 'Ctch%': 'float', 'Yds': 'int', 'Y/R': 'float',
+                                        'TD': 'int', '1D': 'int', 'Lng': 'int', 'Y/Tgt': 'float', 'R/G': 'float', 'Y/G': 'float',
+                                        'Fmb': 'int', 'Year': 'object'})
+    agg_functions = {'Rk': 'mean', 'Tm': 'last', 'Age': 'last', 'Pos': 'last',
+                     'G': 'sum', 'GS': 'sum',
+                     'Tgt': 'sum', 'Rec': 'sum', 'Ctch%': 'mean', 'Yds': 'sum', 'Y/R': 'mean',
+                     'TD': 'sum', '1D': 'sum', 'Lng': 'mean', 'Y/Tgt': 'mean', 'R/G': 'mean', 'Y/G': 'mean',
+                     'Fmb': 'sum', 'Year': 'last'}
+    WR_DataFrame = WR_DataFrame.groupby(WR_DataFrame['Player']).aggregate(agg_functions)
+    return WR_DataFrame.to_csv('WR_DataFrame.csv', index=True)
 
-def scrapePFR_WRs_Reg():
-    #Create variables to be used
-    url_head = 'https://www.pro-football-reference.com/players/M/'
-    years = ['2017', '2018', '2019', '2020', '2021', '2022']
-    WRs = getPlayerID('WR')
-    #Make the DataFrame with WR stats
-    WR_DataFrame = pd.DataFrame(columns=['Player', 'Year', 'Pos', 'Rec_Tgt', 'Rec_Rec', 'Rec_Yds', 'Rec_Y/R', 'Rec_TD', 'Rec_Ctch%', 'Rec_Y/Tgt',
-                                         'Rus_Att', 'Rus_Yds', 'Rus_Y/A', 'Rus_TD',
-                                         'F_Fmb', 'F_Fl', 'F_FF', 'F_FR', 'F_Yds', 'F_TD',
-                                         'Snap%'])
-    #Do the web scraping
+
+def scrapeTE_Stats():
+    url_head = 'https://www.pro-football-reference.com/years/'
+    years = [str(yr) for yr in range(2000, 2019)]
+    TE_DataFrame = pd.DataFrame(columns=['Rk', 'Player', 'Tm', 'Age', 'Pos', 
+                                         'G', 'GS', 
+                                         'Tgt', 'Rec', 'Ctch%', 'Yds', 'Y/R',
+                                         'TD', '1D', 'Lng', 'Y/Tgt', 'R/G', 'Y/G',
+                                         'Fmb', 'Year'])
     for yr in years:
-        for wr in WRs:
+        players = listDraftedPlayers('TE', int(yr))
+        for year in range(int(yr), int(yr)+4):
             try:
                 time.sleep(2)
-                full_url = url_head + wr + '/gamelog/' + yr
+                full_url = url_head + str(year) + '/receiving.htm'
                 df = pd.read_html(full_url)[0]
-                if 'Receiving' in df.columns:
-                    receiving_stats = df[[('Receiving', 'Tgt'), ('Receiving', 'Rec'), ('Receiving', 'Yds'), ('Receiving', 'Y/R'), ('Receiving', 'TD'), ('Receiving', 'Ctch%'), ('Receiving', 'Y/Tgt')]]
-                    receiving_stats.insert(0, 'Pos', 'WR')
-                    receiving_stats.insert(0, 'Year', yr)
-                    receiving_stats.insert(0, 'Player', wr)
-                    receiving_stats = list(receiving_stats.iloc[-1])
-                else:
-                    receiving_stats = [wr, yr, 'WR', np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
-                if 'Rushing' in df.columns:
-                    rushing_stats = df[[('Rushing', 'Att'), ('Rushing', 'Yds'), ('Rushing', 'Y/A'), ('Rushing', 'TD')]]
-                    rushing_stats = list(rushing_stats.iloc[-1])
-                else:
-                    rushing_stats = [np.nan, np.nan, np.nan, np.nan]
-                if 'Fumbles' in df.columns:
-                    fumble_stats = df[[('Fumbles', 'Fmb'), ('Fumbles', 'FL'), ('Fumbles', 'FF'), ('Fumbles', 'FR'), ('Fumbles', 'Yds'), ('Fumbles', 'TD')]]
-                    fumble_stats = list(fumble_stats.iloc[-1])
-                else:
-                    fumble_stats = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
-                if 'Off. Snaps' in df.columns:
-                    if 'Did Not Play' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Did Not Play'], '0%')
-                    if 'Injured Reserve' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Injured Reserve'], '0%')
-                    if 'Inactive' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Inactive'], '0%')
-                    if 'Suspended' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Suspended'], '0%')
-                    if 'Non-Football Injury' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Non-Football Injury'], '0%')
-                    if 'COVID-19 List' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['COVID-19 List'], '0%')
-                    if 'Exempt List' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Exempt List'], '0%')
-                    if 'Physically Unable to Perform' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Physically Unable to Perform'], '0%')
-                    snapPct_stats = df[[('Off. Snaps', 'Pct')]]
-                    snapPct_stats = pd.DataFrame(snapPct_stats[('Off. Snaps', 'Pct')].str.rstrip("%").astype(float)/100)
-                    snapPct = [snapPct_stats[('Off. Snaps', 'Pct')].mean()]
-                else:
-                    snapPct = [np.nan]
-                if 'ST Snaps' in df.columns:
-                    if 'Did Not Play' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Did Not Play'], '0%')
-                    if 'Injured Reserve' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Injured Reserve'], '0%')
-                    if 'Inactive' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Inactive'], '0%')
-                    if 'Suspended' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Suspended'], '0%')
-                    if 'Non-Football Injury' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Non-Football Injury'], '0%')
-                    if 'COVID-19 List' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['COVID-19 List'], '0%')
-                    if 'Exempt List' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Exempt List'], '0%')
-                    if 'Physically Unable to Perform' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Physically Unable to Perform'], '0%')
-                    stPct_stats = df[[('ST Snaps', 'Pct')]]
-                    stPct_stats = pd.DataFrame(stPct_stats[('ST Snaps', 'Pct')].str.rstrip("%").astype(float)/100)
-                    stPct = [stPct_stats[('ST Snaps', 'Pct')].mean()]
-                else:
-                    stPct = [np.nan]
-                stats = receiving_stats + rushing_stats + fumble_stats + snapPct + stPct
-                WR_DataFrame.loc[len(WR_DataFrame.index)] = stats
+                df['Player'] = df['Player'].map(lambda x: x.rstrip('*+'))
+                df = df[df.Rk != 'Rk']
+                df['Ctch%'] = df['Ctch%'].map(lambda x: x.rstrip("%"))
+                df = df.loc[df['Player'].isin(players)]
+                df['Year'] = str(year)
+                TE_DataFrame = pd.concat([TE_DataFrame, df])
             except ImportError:
                 time.sleep(2)
-                stats = [wr, yr, 'WR', np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
-                WR_DataFrame.loc[len(WR_DataFrame.index)] = stats
-    #Save DF as .csv
-    return WR_DataFrame.to_csv('WR_DataFrame.csv', index=False)
-
-def scrapePFR_TEs_Reg():
-    #Create variables to be used
-    url_head = 'https://www.pro-football-reference.com/players/M/'
-    years = ['2017', '2018', '2019', '2020', '2021', '2022']
-    TEs = getPlayerID('TE')
-    #Make the DataFrame with TE stats
-    TE_DataFrame = pd.DataFrame(columns=['Player', 'Year', 'Pos', 'Rec_Tgt', 'Rec_Rec', 'Rec_Yds', 'Rec_Y/R', 'Rec_TD', 'Rec_Ctch%', 'Rec_Y/Tgt',
-                                         'Tkl_Tot', 'Tkl_Ast', 'Tkl_Comb', 'Tkl_TFL', 'Tkl_QBHits',
-                                         'F_Fmb', 'F_Fl', 'F_FF', 'F_FR', 'F_Yds', 'F_TD',
-                                         'OffSnap%',
-                                         'STSnap%'])
-    #Do the web scraping
-    for yr in years:
-        for te in TEs:
-            try:
-                time.sleep(2)
-                full_url = url_head + te + '/gamelog/' + yr
-                df = pd.read_html(full_url)[0]
-                if 'Receiving' in df.columns:
-                    receiving_stats = df[[('Receiving', 'Tgt'), ('Receiving', 'Rec'), ('Receiving', 'Yds'), ('Receiving', 'Y/R'), ('Receiving', 'TD'), ('Receiving', 'Ctch%'), ('Receiving', 'Y/Tgt')]]
-                    receiving_stats.insert(0, 'Pos', 'TE')
-                    receiving_stats.insert(0, 'Year', yr)
-                    receiving_stats.insert(0, 'Player', te)
-                    receiving_stats = list(receiving_stats.iloc[-1])
-                else:
-                    receiving_stats = [te, yr, 'TE', np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
-                if 'Tackles' in df.columns:
-                    tackle_stats = df[[('Tackles', 'Solo'), ('Tackles', 'Ast'), ('Tackles', 'Comb'), ('Tackles', 'TFL'), ('Tackles', 'QBHits')]]
-                    tackle_stats = list(tackle_stats.iloc[-1])
-                else:
-                    tackle_stats = [np.nan, np.nan, np.nan, np.nan, np.nan]
-                if 'Fumbles' in df.columns:
-                    fumble_stats = df[[('Fumbles', 'Fmb'), ('Fumbles', 'FL'), ('Fumbles', 'FF'), ('Fumbles', 'FR'), ('Fumbles', 'Yds'), ('Fumbles', 'TD')]]
-                    fumble_stats = list(fumble_stats.iloc[-1])
-                else:
-                    fumble_stats = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
-                if 'Off. Snaps' in df.columns:
-                    if 'Did Not Play' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Did Not Play'], '0%')
-                    if 'Injured Reserve' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Injured Reserve'], '0%')
-                    if 'Inactive' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Inactive'], '0%')
-                    if 'Suspended' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Suspended'], '0%')
-                    if 'Non-Football Injury' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Non-Football Injury'], '0%')
-                    if 'COVID-19 List' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['COVID-19 List'], '0%')
-                    if 'Exempt List' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Exempt List'], '0%')
-                    if 'Physically Unable to Perform' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Physically Unable to Perform'], '0%')
-                    snapPct_stats = df[[('Off. Snaps', 'Pct')]]
-                    snapPct_stats = pd.DataFrame(snapPct_stats[('Off. Snaps', 'Pct')].str.rstrip("%").astype(float)/100)
-                    snapPct = [snapPct_stats[('Off. Snaps', 'Pct')].mean()]
-                else:
-                    snapPct = [np.nan]
-                if 'ST Snaps' in df.columns:
-                    if 'Did Not Play' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Did Not Play'], '0%')
-                    if 'Injured Reserve' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Injured Reserve'], '0%')
-                    if 'Inactive' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Inactive'], '0%')
-                    if 'Suspended' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Suspended'], '0%')
-                    if 'Non-Football Injury' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Non-Football Injury'], '0%')
-                    if 'COVID-19 List' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['COVID-19 List'], '0%')
-                    if 'Exempt List' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Exempt List'], '0%')
-                    if 'Physically Unable to Perform' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Physically Unable to Perform'], '0%')
-                    stPct_stats = df[[('ST Snaps', 'Pct')]]
-                    stPct_stats = pd.DataFrame(stPct_stats[('ST Snaps', 'Pct')].str.rstrip("%").astype(float)/100)
-                    stPct = [stPct_stats[('ST Snaps', 'Pct')].mean()]
-                else:
-                    stPct = [np.nan]
-                stats = receiving_stats + tackle_stats + fumble_stats + snapPct + stPct
-                TE_DataFrame.loc[len(TE_DataFrame.index)] = stats
-            except ImportError:
-                time.sleep(2)
-                stats = [te, yr, 'TE', np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
-                TE_DataFrame.loc[len(TE_DataFrame.index)] = stats
-    #Save DF as .csv
-    return TE_DataFrame.to_csv('TE_DataFrame.csv', index=False)
-
-
-
-
-def scrapePFR_DEs_Reg():
-    #Create variables to be used
-    url_head = 'https://www.pro-football-reference.com/players/M/'
-    years = ['2017', '2018', '2019', '2020', '2021', '2022']
-    DEs = getPlayerID('DE')
-    #Make the DataFrame with DE stats
-    DE_DataFrame = pd.DataFrame(columns=['Player', 'Year', 'Pos', 'Def_Sk', 'Tkl_Tot', 'Tkl_Ast', 'Tkl_Comb', 'Tkl_TFL', 'Tkl_QBHits',
-                                         'Def_Int', 'Def_Yds', 'Def_TD', 'Def_PD',
-                                         'F_Fmb', 'F_Fl', 'F_FF', 'F_FR', 'F_Yds', 'F_TD',
-                                         'DefSnap%',
-                                         'STSnap%'])
-    #Do the web scraping
-    for yr in years:
-        for de in DEs:
-            try:
-                time.sleep(2)
-                full_url = url_head + de + '/gamelog/' + yr
-                df = pd.read_html(full_url)[0]
-                if 'Unnamed: 10_level_0' in df.columns:
-                    sack_stats = df[[('Unnamed: 10_level_0', 'Sk')]]
-                    sack_stats.insert(0, 'Pos', 'DE')
-                    sack_stats.insert(0, 'Year', yr)
-                    sack_stats.insert(0, 'Player', de)
-                    sack_stats = list(sack_stats.iloc[-1])
-                else:
-                    sack_stats = [de, yr, 'DE', np.nan]
-                if 'Tackles' in df.columns:
-                    tackle_stats = df[[('Tackles', 'Solo'), ('Tackles', 'Ast'), ('Tackles', 'Comb'), ('Tackles', 'TFL'), ('Tackles', 'QBHits')]]
-                    tackle_stats = list(tackle_stats.iloc[-1])
-                else:
-                    tackle_stats = [np.nan, np.nan, np.nan, np.nan, np.nan]
-                if 'Def Interceptions' in df.columns:
-                    interception_stats = df[[('Def Interceptions', 'Int'), ('Def Interceptions', 'Yds'), ('Def Interceptions', 'TD'), ('Def Interceptions', 'PD')]]
-                    interception_stats = list(interception_stats.iloc[-1])
-                else:
-                    interception_stats = [np.nan, np.nan, np.nan, np.nan]
-                if 'Fumbles' in df.columns:
-                    fumble_stats = df[[('Fumbles', 'Fmb'), ('Fumbles', 'FL'), ('Fumbles', 'FF'), ('Fumbles', 'FR'), ('Fumbles', 'Yds'), ('Fumbles', 'TD')]]
-                    fumble_stats = list(fumble_stats.iloc[-1])
-                else:
-                    fumble_stats = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
-                if 'Def. Snaps' in df.columns:
-                    if 'Did Not Play' in df[('Def. Snaps', 'Pct')].values:
-                        df[('Def. Snaps', 'Pct')] = df[('Def. Snaps', 'Pct')].replace(['Did Not Play'], '0%')
-                    if 'Injured Reserve' in df[('Def. Snaps', 'Pct')].values:
-                        df[('Def. Snaps', 'Pct')] = df[('Def. Snaps', 'Pct')].replace(['Injured Reserve'], '0%')
-                    if 'Inactive' in df[('Def. Snaps', 'Pct')].values:
-                        df[('Def. Snaps', 'Pct')] = df[('Def. Snaps', 'Pct')].replace(['Inactive'], '0%')
-                    if 'Suspended' in df[('Def. Snaps', 'Pct')].values:
-                        df[('Def. Snaps', 'Pct')] = df[('Def. Snaps', 'Pct')].replace(['Suspended'], '0%')
-                    if 'Non-Football Injury' in df[('Def. Snaps', 'Pct')].values:
-                        df[('Def. Snaps', 'Pct')] = df[('Def. Snaps', 'Pct')].replace(['Non-Football Injury'], '0%')
-                    if 'COVID-19 List' in df[('Def. Snaps', 'Pct')].values:
-                        df[('Def. Snaps', 'Pct')] = df[('Def. Snaps', 'Pct')].replace(['COVID-19 List'], '0%')
-                    if 'Exempt List' in df[('Def. Snaps', 'Pct')].values:
-                        df[('Def. Snaps', 'Pct')] = df[('Def. Snaps', 'Pct')].replace(['Exempt List'], '0%')
-                    if 'Physically Unable to Perform' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Physically Unable to Perform'], '0%')
-                    snapPct_stats = df[[('Def. Snaps', 'Pct')]]
-                    snapPct_stats = pd.DataFrame(snapPct_stats[('Def. Snaps', 'Pct')].str.rstrip("%").astype(float)/100)
-                    snapPct = [snapPct_stats[('Def. Snaps', 'Pct')].mean()]
-                else:
-                    snapPct = [np.nan]
-                if 'ST Snaps' in df.columns:
-                    if 'Did Not Play' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Did Not Play'], '0%')
-                    if 'Injured Reserve' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Injured Reserve'], '0%')
-                    if 'Inactive' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Inactive'], '0%')
-                    if 'Suspended' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Suspended'], '0%')
-                    if 'Non-Football Injury' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Non-Football Injury'], '0%')
-                    if 'COVID-19 List' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['COVID-19 List'], '0%')
-                    if 'Exempt List' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Exempt List'], '0%')
-                    if 'Physically Unable to Perform' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Physically Unable to Perform'], '0%')
-                    stPct_stats = df[[('ST Snaps', 'Pct')]]
-                    stPct_stats = pd.DataFrame(stPct_stats[('ST Snaps', 'Pct')].str.rstrip("%").astype(float)/100)
-                    stPct = [stPct_stats[('ST Snaps', 'Pct')].mean()]
-                else:
-                    stPct = [np.nan]
-                stats = sack_stats + tackle_stats + interception_stats + fumble_stats + snapPct + stPct
-                DE_DataFrame.loc[len(DE_DataFrame.index)] = stats
-            except ImportError:
-                time.sleep(2)
-                stats = [de, yr, 'DE', np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
-                DE_DataFrame.loc[len(DE_DataFrame.index)] = stats
-    #Save DF as .csv
-    return DE_DataFrame.to_csv('DE_DataFrame.csv', index=False)
-
-def scrapePFR_Ss_Reg():
-    #Create variables to be used
-    url_head = 'https://www.pro-football-reference.com/players/M/'
-    years = ['2017', '2018', '2019', '2020', '2021', '2022']
-    Ss = getPlayerID('S')
-    #Make the DataFrame with DE stats
-    S_DataFrame = pd.DataFrame(columns=['Player', 'Year', 'Pos', 'Def_Sk', 'Tkl_Tot', 'Tkl_Ast', 'Tkl_Comb', 'Tkl_TFL', 'Tkl_QBHits',
-                                         'Def_Int', 'Def_Yds', 'Def_TD', 'Def_PD',
-                                         'F_Fmb', 'F_Fl', 'F_FF', 'F_FR', 'F_Yds', 'F_TD',
-                                         'DefSnap%',
-                                         'STSnap%'])
-    #Do the web scraping
-    for yr in years:
-        for s in Ss:
-            try:
-                time.sleep(2)
-                full_url = url_head + s + '/gamelog/' + yr
-                df = pd.read_html(full_url)[0]
-                if 'Unnamed: 10_level_0' in df.columns:
-                    sack_stats = df[[('Unnamed: 10_level_0', 'Sk')]]
-                    sack_stats.insert(0, 'Pos', 'S')
-                    sack_stats.insert(0, 'Year', yr)
-                    sack_stats.insert(0, 'Player', s)
-                    sack_stats = list(sack_stats.iloc[-1])
-                else:
-                    sack_stats = [s, yr, 'S', np.nan]
-                if 'Tackles' in df.columns:
-                    tackle_stats = df[[('Tackles', 'Solo'), ('Tackles', 'Ast'), ('Tackles', 'Comb'), ('Tackles', 'TFL'), ('Tackles', 'QBHits')]]
-                    tackle_stats = list(tackle_stats.iloc[-1])
-                else:
-                    tackle_stats = [np.nan, np.nan, np.nan, np.nan, np.nan]
-                if 'Def Interceptions' in df.columns:
-                    interception_stats = df[[('Def Interceptions', 'Int'), ('Def Interceptions', 'Yds'), ('Def Interceptions', 'TD'), ('Def Interceptions', 'PD')]]
-                    interception_stats = list(interception_stats.iloc[-1])
-                else:
-                    interception_stats = [np.nan, np.nan, np.nan, np.nan]
-                if 'Fumbles' in df.columns:
-                    fumble_stats = df[[('Fumbles', 'Fmb'), ('Fumbles', 'FL'), ('Fumbles', 'FF'), ('Fumbles', 'FR'), ('Fumbles', 'Yds'), ('Fumbles', 'TD')]]
-                    fumble_stats = list(fumble_stats.iloc[-1])
-                else:
-                    fumble_stats = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
-                if 'Def. Snaps' in df.columns:
-                    if 'Did Not Play' in df[('Def. Snaps', 'Pct')].values:
-                        df[('Def. Snaps', 'Pct')] = df[('Def. Snaps', 'Pct')].replace(['Did Not Play'], '0%')
-                    if 'Injured Reserve' in df[('Def. Snaps', 'Pct')].values:
-                        df[('Def. Snaps', 'Pct')] = df[('Def. Snaps', 'Pct')].replace(['Injured Reserve'], '0%')
-                    if 'Inactive' in df[('Def. Snaps', 'Pct')].values:
-                        df[('Def. Snaps', 'Pct')] = df[('Def. Snaps', 'Pct')].replace(['Inactive'], '0%')
-                    if 'Suspended' in df[('Def. Snaps', 'Pct')].values:
-                        df[('Def. Snaps', 'Pct')] = df[('Def. Snaps', 'Pct')].replace(['Suspended'], '0%')
-                    if 'Non-Football Injury' in df[('Def. Snaps', 'Pct')].values:
-                        df[('Def. Snaps', 'Pct')] = df[('Def. Snaps', 'Pct')].replace(['Non-Football Injury'], '0%')
-                    if 'COVID-19 List' in df[('Def. Snaps', 'Pct')].values:
-                        df[('Def. Snaps', 'Pct')] = df[('Def. Snaps', 'Pct')].replace(['COVID-19 List'], '0%')
-                    if 'Exempt List' in df[('Def. Snaps', 'Pct')].values:
-                        df[('Def. Snaps', 'Pct')] = df[('Def. Snaps', 'Pct')].replace(['Exempt List'], '0%')
-                    if 'Physically Unable to Perform' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Physically Unable to Perform'], '0%')
-                    snapPct_stats = df[[('Def. Snaps', 'Pct')]]
-                    snapPct_stats = pd.DataFrame(snapPct_stats[('Def. Snaps', 'Pct')].str.rstrip("%").astype(float)/100)
-                    snapPct = [snapPct_stats[('Def. Snaps', 'Pct')].mean()]
-                else:
-                    snapPct = [np.nan]
-                if 'ST Snaps' in df.columns:
-                    if 'Did Not Play' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Did Not Play'], '0%')
-                    if 'Injured Reserve' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Injured Reserve'], '0%')
-                    if 'Inactive' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Inactive'], '0%')
-                    if 'Suspended' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Suspended'], '0%')
-                    if 'Non-Football Injury' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Non-Football Injury'], '0%')
-                    if 'COVID-19 List' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['COVID-19 List'], '0%')
-                    if 'Exempt List' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Exempt List'], '0%')
-                    if 'Physically Unable to Perform' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Physically Unable to Perform'], '0%')
-                    stPct_stats = df[[('ST Snaps', 'Pct')]]
-                    stPct_stats = pd.DataFrame(stPct_stats[('ST Snaps', 'Pct')].str.rstrip("%").astype(float)/100)
-                    stPct = [stPct_stats[('ST Snaps', 'Pct')].mean()]
-                else:
-                    stPct = [np.nan]
-                stats = sack_stats + tackle_stats + interception_stats + fumble_stats + snapPct + stPct
-                S_DataFrame.loc[len(S_DataFrame.index)] = stats
-            except ImportError:
-                time.sleep(2)
-                stats = [s, yr, 'S', np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
-                S_DataFrame.loc[len(S_DataFrame.index)] = stats
-    #Save DF as .csv
-    return S_DataFrame.to_csv('S_DataFrame.csv', index=False)
-
-
-def scrapePFR_CBs_Reg():
-    #Create variables to be used
-    url_head = 'https://www.pro-football-reference.com/players/M/'
-    years = ['2017', '2018', '2019', '2020', '2021', '2022']
-    CBs = getPlayerID('CB')
-    #Make the DataFrame with DE stats
-    CB_DataFrame = pd.DataFrame(columns=['Player', 'Year', 'Pos', 'Def_Sk', 'Tkl_Tot', 'Tkl_Ast', 'Tkl_Comb', 'Tkl_TFL', 'Tkl_QBHits',
-                                         'Def_Int', 'Def_Yds', 'Def_TD', 'Def_PD',
-                                         'F_Fmb', 'F_Fl', 'F_FF', 'F_FR', 'F_Yds', 'F_TD',
-                                         'DefSnap%',
-                                         'STSnap%'])
-    #Do the web scraping
-    for yr in years:
-        for cb in CBs:
-            try:
-                time.sleep(2)
-                full_url = url_head + cb + '/gamelog/' + yr
-                df = pd.read_html(full_url)[0]
-                if 'Unnamed: 10_level_0' in df.columns:
-                    sack_stats = df[[('Unnamed: 10_level_0', 'Sk')]]
-                    sack_stats.insert(0, 'Pos', 'CB')
-                    sack_stats.insert(0, 'Year', yr)
-                    sack_stats.insert(0, 'Player', cb)
-                    sack_stats = list(sack_stats.iloc[-1])
-                else:
-                    sack_stats = [cb, yr, 'CB', np.nan]
-                if 'Tackles' in df.columns:
-                    tackle_stats = df[[('Tackles', 'Solo'), ('Tackles', 'Ast'), ('Tackles', 'Comb'), ('Tackles', 'TFL'), ('Tackles', 'QBHits')]]
-                    tackle_stats = list(tackle_stats.iloc[-1])
-                else:
-                    tackle_stats = [np.nan, np.nan, np.nan, np.nan, np.nan]
-                if 'Def Interceptions' in df.columns:
-                    interception_stats = df[[('Def Interceptions', 'Int'), ('Def Interceptions', 'Yds'), ('Def Interceptions', 'TD'), ('Def Interceptions', 'PD')]]
-                    interception_stats = list(interception_stats.iloc[-1])
-                else:
-                    interception_stats = [np.nan, np.nan, np.nan, np.nan]
-                if 'Fumbles' in df.columns:
-                    fumble_stats = df[[('Fumbles', 'Fmb'), ('Fumbles', 'FL'), ('Fumbles', 'FF'), ('Fumbles', 'FR'), ('Fumbles', 'Yds'), ('Fumbles', 'TD')]]
-                    fumble_stats = list(fumble_stats.iloc[-1])
-                else:
-                    fumble_stats = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
-                if 'Def. Snaps' in df.columns:
-                    if 'Did Not Play' in df[('Def. Snaps', 'Pct')].values:
-                        df[('Def. Snaps', 'Pct')] = df[('Def. Snaps', 'Pct')].replace(['Did Not Play'], '0%')
-                    if 'Injured Reserve' in df[('Def. Snaps', 'Pct')].values:
-                        df[('Def. Snaps', 'Pct')] = df[('Def. Snaps', 'Pct')].replace(['Injured Reserve'], '0%')
-                    if 'Inactive' in df[('Def. Snaps', 'Pct')].values:
-                        df[('Def. Snaps', 'Pct')] = df[('Def. Snaps', 'Pct')].replace(['Inactive'], '0%')
-                    if 'Suspended' in df[('Def. Snaps', 'Pct')].values:
-                        df[('Def. Snaps', 'Pct')] = df[('Def. Snaps', 'Pct')].replace(['Suspended'], '0%')
-                    if 'Non-Football Injury' in df[('Def. Snaps', 'Pct')].values:
-                        df[('Def. Snaps', 'Pct')] = df[('Def. Snaps', 'Pct')].replace(['Non-Football Injury'], '0%')
-                    if 'COVID-19 List' in df[('Def. Snaps', 'Pct')].values:
-                        df[('Def. Snaps', 'Pct')] = df[('Def. Snaps', 'Pct')].replace(['COVID-19 List'], '0%')
-                    if 'Exempt List' in df[('Def. Snaps', 'Pct')].values:
-                        df[('Def. Snaps', 'Pct')] = df[('Def. Snaps', 'Pct')].replace(['Exempt List'], '0%')
-                    if 'Physically Unable to Perform' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Physically Unable to Perform'], '0%')
-                    snapPct_stats = df[[('Def. Snaps', 'Pct')]]
-                    snapPct_stats = pd.DataFrame(snapPct_stats[('Def. Snaps', 'Pct')].str.rstrip("%").astype(float)/100)
-                    snapPct = [snapPct_stats[('Def. Snaps', 'Pct')].mean()]
-                else:
-                    snapPct = [np.nan]
-                if 'ST Snaps' in df.columns:
-                    if 'Did Not Play' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Did Not Play'], '0%')
-                    if 'Injured Reserve' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Injured Reserve'], '0%')
-                    if 'Inactive' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Inactive'], '0%')
-                    if 'Suspended' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Suspended'], '0%')
-                    if 'Non-Football Injury' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Non-Football Injury'], '0%')
-                    if 'COVID-19 List' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['COVID-19 List'], '0%')
-                    if 'Exempt List' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Exempt List'], '0%')
-                    if 'Physically Unable to Perform' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Physically Unable to Perform'], '0%')
-                    stPct_stats = df[[('ST Snaps', 'Pct')]]
-                    stPct_stats = pd.DataFrame(stPct_stats[('ST Snaps', 'Pct')].str.rstrip("%").astype(float)/100)
-                    stPct = [stPct_stats[('ST Snaps', 'Pct')].mean()]
-                else:
-                    stPct = [np.nan]
-                stats = sack_stats + tackle_stats + interception_stats + fumble_stats + snapPct + stPct
-                CB_DataFrame.loc[len(CB_DataFrame.index)] = stats
-            except ImportError:
-                time.sleep(2)
-                stats = [cb, yr, 'CB', np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
-                CB_DataFrame.loc[len(CB_DataFrame.index)] = stats
-    #Save DF as .csv
-    return CB_DataFrame.to_csv('CB_DataFrame.csv', index=False)
-
-
-def scrapePFR_LBs_Reg():
-    #Create variables to be used
-    url_head = 'https://www.pro-football-reference.com/players/M/'
-    years = ['2017', '2018', '2019', '2020', '2021', '2022']
-    LBs = getPlayerID('LB')
-    #Make the DataFrame with DE stats
-    LB_DataFrame = pd.DataFrame(columns=['Player', 'Year', 'Pos', 'Def_Sk', 'Tkl_Tot', 'Tkl_Ast', 'Tkl_Comb', 'Tkl_TFL', 'Tkl_QBHits',
-                                         'Def_Int', 'Def_Yds', 'Def_TD', 'Def_PD',
-                                         'F_Fmb', 'F_Fl', 'F_FF', 'F_FR', 'F_Yds', 'F_TD',
-                                         'DefSnap%',
-                                         'STSnap%'])
-    #Do the web scraping
-    for yr in years:
-        for lb in LBs:
-            try:
-                time.sleep(2)
-                full_url = url_head + lb + '/gamelog/' + yr
-                df = pd.read_html(full_url)[0]
-                if 'Unnamed: 10_level_0' in df.columns:
-                    sack_stats = df[[('Unnamed: 10_level_0', 'Sk')]]
-                    sack_stats.insert(0, 'Pos', 'LB')
-                    sack_stats.insert(0, 'Year', yr)
-                    sack_stats.insert(0, 'Player', lb)
-                    sack_stats = list(sack_stats.iloc[-1])
-                else:
-                    sack_stats = [lb, yr, 'LB', np.nan]
-                if 'Tackles' in df.columns:
-                    tackle_stats = df[[('Tackles', 'Solo'), ('Tackles', 'Ast'), ('Tackles', 'Comb'), ('Tackles', 'TFL'), ('Tackles', 'QBHits')]]
-                    tackle_stats = list(tackle_stats.iloc[-1])
-                else:
-                    tackle_stats = [np.nan, np.nan, np.nan, np.nan, np.nan]
-                if 'Def Interceptions' in df.columns:
-                    interception_stats = df[[('Def Interceptions', 'Int'), ('Def Interceptions', 'Yds'), ('Def Interceptions', 'TD'), ('Def Interceptions', 'PD')]]
-                    interception_stats = list(interception_stats.iloc[-1])
-                else:
-                    interception_stats = [np.nan, np.nan, np.nan, np.nan]
-                if 'Fumbles' in df.columns:
-                    fumble_stats = df[[('Fumbles', 'Fmb'), ('Fumbles', 'FL'), ('Fumbles', 'FF'), ('Fumbles', 'FR'), ('Fumbles', 'Yds'), ('Fumbles', 'TD')]]
-                    fumble_stats = list(fumble_stats.iloc[-1])
-                else:
-                    fumble_stats = [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
-                if 'Def. Snaps' in df.columns:
-                    if 'Did Not Play' in df[('Def. Snaps', 'Pct')].values:
-                        df[('Def. Snaps', 'Pct')] = df[('Def. Snaps', 'Pct')].replace(['Did Not Play'], '0%')
-                    if 'Injured Reserve' in df[('Def. Snaps', 'Pct')].values:
-                        df[('Def. Snaps', 'Pct')] = df[('Def. Snaps', 'Pct')].replace(['Injured Reserve'], '0%')
-                    if 'Inactive' in df[('Def. Snaps', 'Pct')].values:
-                        df[('Def. Snaps', 'Pct')] = df[('Def. Snaps', 'Pct')].replace(['Inactive'], '0%')
-                    if 'Suspended' in df[('Def. Snaps', 'Pct')].values:
-                        df[('Def. Snaps', 'Pct')] = df[('Def. Snaps', 'Pct')].replace(['Suspended'], '0%')
-                    if 'Non-Football Injury' in df[('Def. Snaps', 'Pct')].values:
-                        df[('Def. Snaps', 'Pct')] = df[('Def. Snaps', 'Pct')].replace(['Non-Football Injury'], '0%')
-                    if 'COVID-19 List' in df[('Def. Snaps', 'Pct')].values:
-                        df[('Def. Snaps', 'Pct')] = df[('Def. Snaps', 'Pct')].replace(['COVID-19 List'], '0%')
-                    if 'Exempt List' in df[('Def. Snaps', 'Pct')].values:
-                        df[('Def. Snaps', 'Pct')] = df[('Def. Snaps', 'Pct')].replace(['Exempt List'], '0%')
-                    if 'Physically Unable to Perform' in df[('Off. Snaps', 'Pct')].values:
-                        df[('Off. Snaps', 'Pct')] = df[('Off. Snaps', 'Pct')].replace(['Physically Unable to Perform'], '0%')
-                    snapPct_stats = df[[('Def. Snaps', 'Pct')]]
-                    snapPct_stats = pd.DataFrame(snapPct_stats[('Def. Snaps', 'Pct')].str.rstrip("%").astype(float)/100)
-                    snapPct = [snapPct_stats[('Def. Snaps', 'Pct')].mean()]
-                else:
-                    snapPct = [np.nan]
-                if 'ST Snaps' in df.columns:
-                    if 'Did Not Play' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Did Not Play'], '0%')
-                    if 'Injured Reserve' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Injured Reserve'], '0%')
-                    if 'Inactive' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Inactive'], '0%')
-                    if 'Suspended' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Suspended'], '0%')
-                    if 'Non-Football Injury' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Non-Football Injury'], '0%')
-                    if 'COVID-19 List' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['COVID-19 List'], '0%')
-                    if 'Exempt List' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Exempt List'], '0%')
-                    if 'Physically Unable to Perform' in df[('ST Snaps', 'Pct')].values:
-                        df[('ST Snaps', 'Pct')] = df[('ST Snaps', 'Pct')].replace(['Physically Unable to Perform'], '0%')
-                    stPct_stats = df[[('ST Snaps', 'Pct')]]
-                    stPct_stats = pd.DataFrame(stPct_stats[('ST Snaps', 'Pct')].str.rstrip("%").astype(float)/100)
-                    stPct = [stPct_stats[('ST Snaps', 'Pct')].mean()]
-                else:
-                    stPct = [np.nan]
-                stats = sack_stats + tackle_stats + interception_stats + fumble_stats + snapPct + stPct
-                LB_DataFrame.loc[len(LB_DataFrame.index)] = stats
-            except ImportError:
-                time.sleep(2)
-                stats = [lb, yr, 'LB', np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
-                LB_DataFrame.loc[len(LB_DataFrame.index)] = stats
-    #Save DF as .csv
-    return LB_DataFrame.to_csv('LB_DataFrame.csv', index=False)
-'''
+    TE_DataFrame = TE_DataFrame.fillna('0')
+    TE_DataFrame = TE_DataFrame.astype({'Rk': 'int', 'Player': 'object', 'Tm': 'object', 'Age': 'int', 'Pos': 'object',
+                                        'G': 'int', 'GS': 'int',
+                                        'Tgt': 'int', 'Rec': 'int', 'Ctch%': 'float', 'Yds': 'int', 'Y/R': 'float',
+                                        'TD': 'int', '1D': 'int', 'Lng': 'int', 'Y/Tgt': 'float', 'R/G': 'float', 'Y/G': 'float',
+                                        'Fmb': 'int', 'Year': 'object'})
+    agg_functions = {'Rk': 'mean', 'Tm': 'last', 'Age': 'last', 'Pos': 'last',
+                     'G': 'sum', 'GS': 'sum',
+                     'Tgt': 'sum', 'Rec': 'sum', 'Ctch%': 'mean', 'Yds': 'sum', 'Y/R': 'mean',
+                     'TD': 'sum', '1D': 'sum', 'Lng': 'mean', 'Y/Tgt': 'mean', 'R/G': 'mean', 'Y/G': 'mean',
+                     'Fmb': 'sum', 'Year': 'last'}
+    TE_DataFrame = TE_DataFrame.groupby(TE_DataFrame['Player']).aggregate(agg_functions)
+    return TE_DataFrame.to_csv('TE_DataFrame.csv', index=True)
