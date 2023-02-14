@@ -2,6 +2,21 @@ import pandas as pd
 import numpy as np
 import time
 
+###############################################################################################################
+###############################################################################################################
+##                                          Column Name Definitions                                          ##
+###############################################################################################################
+##################################### Column names for Draft_Dataframe.csv #################################### 
+## Rnd: Round of Draft that player was selected                                                              ##
+## Pick: What psick number they were drafted                                                                 ##
+## Tm: Team athlete was drafted by                                                                           ##
+## Player: Name of athlete                                                                                   ##
+## Pos: Position athlete played out of college                                                               ##
+## Year: Year that play was drafted                                                                          ##
+###############################################################################################################
+###############################################################################################################
+
+
 #Read in data
 def getDraftClass():
     #Creat variables
@@ -303,7 +318,7 @@ def scrapeLB_Stats():
                                          'Sk', 'Comb', 'Solo', 'Ast', 'TFL',
                                          'QBHits', 'Sfty', 'Year'])
     for yr in years:
-        players = listDraftedPlayersPOS('DB', int(yr))
+        players = listDraftedPlayersPOS('LB', int(yr))
         for year in range(int(yr), int(yr)+4):
             if year < 2023:
                 try:
