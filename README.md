@@ -21,7 +21,7 @@ After the data was collected it was cleaned so that it could be utilized for mac
 ![WR Results](https://github.com/r-gram/PlayerCompensationModel/blob/main/Data/images/WR_Results.PNG?raw=true)
 
 ## How to Run
-All code is in an easy-to-use Jupyter Notebook. To run, download the [Notebook](https://github.com/r-gram/NLP_SentimentAnalysis_project/blob/main/Code/SentimentAnalysis_Project_Implementation.ipynb) and insure that all necessary packages are downloaded. 
+All code is in an easy-to-use Jupyter Notebook. To run, download the [Notebook](https://github.com/r-gram/PlayerCompensationModel/tree/main/modelsML/JNotebooks) and insure that all necessary packages are downloaded. 
 Packages Needed:
 - [FLAML](https://microsoft.github.io/FLAML/docs/Installation/)
 - [Matplotlib](https://matplotlib.org/stable/users/installing/index.html)
